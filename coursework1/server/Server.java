@@ -4,39 +4,28 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
 
-public class Server implements ICalc{
-    private Hashtable<Integer, String> students = new Hashtable<Integer, String>();
+public class Server implements IRemoteAuction{
+    private Hashtable<Integer, AuctionItem> auctionItem;
     public Server() {
         super();
+        auctionItem = new Hashtable<Integer, AuctionItem>();
+        auctionItem.put(1, new AuctionItem(1, "Cup", "A nice cup."));
+        auctionItem.put(2, new AuctionItem(2, "Fork", "A decent fork."));
+        auctionItem.put(3, new AuctionItem(3, "Plate", "An ornate plate."));
+        auctionItem.put(4, new AuctionItem(4, "Car", "An old car."));
+
     }
 
-    public void StoreData(Student toStore) throws RemoteException
+    public AuctionItem getSpec (int itemId, int clientId) throws RemoteException
     {
-        if(toStore == null)
-        {
-            System.out.println("Server: error, the object that has been supplied is null");
-            return;
-        }
-        students.put(toStore.GetID(), toStore.GetName());
-        System.out.println("Server: Sucessfully put {" + toStore.GetID() + ", " + toStore.GetName() + "} into hashtable");
+        return auctionItem.get(itemId);
     }
 
-    public Student RetrieveData(int id) throws RemoteException
-    {
-        String name = students.get(id);
-        if(name == null)
-        {
-            System.out.println("Server: error, hash table entry not found for id: " + id);
-            return null;
-        }
-        System.out.println("Server: successfully retrieved object for id: " + id);
-        return new Student(id, name);
-    }
     public static void main(String[] args) {
         try {
             Server s = new Server();
             String name = "myserver";
-            ICalc stub = (ICalc) UnicastRemoteObject.exportObject(s, 0);
+            IRemoteAuction stub = (IRemoteAuction) UnicastRemoteObject.exportObject(s, 0);
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind(name, stub);
             System.out.println("Server ready");
