@@ -16,7 +16,7 @@ public class AuctionClient{
       AuctionItem item = server.getSpec(itemId, clientId);
       if(item == null)
       {
-        System.out.println("Client: error, no entry for ID: " + itemId + "in server");
+        System.out.println("Client: error, no entry for ID: " + itemId + " in server");
       }
       else
       {

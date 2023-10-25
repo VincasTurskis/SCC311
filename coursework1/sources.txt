@@ -1,0 +1,4 @@
+./client/AuctionClient.java
+./server/Server.java
+./SharedObjects/AuctionItem.java
+./SharedObjects/IRemoteAuction.java
