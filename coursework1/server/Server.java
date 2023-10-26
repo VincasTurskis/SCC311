@@ -5,20 +5,31 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
 
 public class Server implements IRemoteAuction{
-    private Hashtable<Integer, AuctionItem> auctionItem;
+    private Hashtable<Integer, AuctionItem> auctionItems;
+    private int nextId;
     public Server() {
         super();
-        auctionItem = new Hashtable<Integer, AuctionItem>();
-        auctionItem.put(1, new AuctionItem(1, "Cup", "A nice cup."));
-        auctionItem.put(2, new AuctionItem(2, "Fork", "A decent fork."));
-        auctionItem.put(3, new AuctionItem(3, "Plate", "An ornate plate."));
-        auctionItem.put(4, new AuctionItem(4, "Car", "An old car."));
+        nextId = 1;
+        auctionItems = new Hashtable<Integer, AuctionItem>();
+        createAuction("Cup", "A nice cup.", 0, 1);
+        createAuction("Fork", "A decent fork.", 0, 1);
+        createAuction("Plate", "An ornate plate.", 0, 1);
+        createAuction("Car", "An old car.", 0, 1);
 
     }
 
     public AuctionItem getSpec (int itemId, int clientId) throws RemoteException
     {
-        return auctionItem.get(itemId);
+        return auctionItems.get(itemId);
+    }
+
+    public int createAuction(String title, String description, int startingPrice, int reservePrice)
+    {
+        if(title == null || description == null || startingPrice < 0 || reservePrice <= startingPrice) return -1;
+        AuctionItem newItem = new AuctionItem(nextId, title, description, startingPrice, reservePrice);
+        auctionItems.put(nextId, newItem);
+        nextId++;
+        return newItem.getId();
     }
 
     public static void main(String[] args) {
