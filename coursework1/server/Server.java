@@ -3,6 +3,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Server implements IRemoteAuction{
     private Hashtable<Integer, AuctionItem> auctionItems;
@@ -11,10 +13,20 @@ public class Server implements IRemoteAuction{
         super();
         nextId = 1;
         auctionItems = new Hashtable<Integer, AuctionItem>();
-        createAuction("Cup", "A nice cup.", 0, 1);
-        createAuction("Fork", "A decent fork.", 0, 1);
-        createAuction("Plate", "An ornate plate.", 0, 1);
-        createAuction("Car", "An old car.", 0, 1);
+        try{
+            createAuction("Cup", "A nice cup.", 0, 10);
+            createAuction("Fork", "A decent fork.", 5, 10);
+            createAuction("Plate", "An ornate plate.", 4, 10);
+            createAuction("Car", "An old car.", 3, 10);
+            for(String s : browseActiveAuctions())
+            {
+                System.out.println(s);
+            }
+        }
+        catch (Exception e) {
+            System.err.println("Exception:");
+            e.printStackTrace();
+        }
 
     }
 
@@ -23,7 +35,7 @@ public class Server implements IRemoteAuction{
         return auctionItems.get(itemId);
     }
 
-    public int createAuction(String title, String description, int startingPrice, int reservePrice)
+    public int createAuction(String title, String description, int startingPrice, int reservePrice) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         if(title == null || description == null || startingPrice < 0 || reservePrice <= startingPrice)
@@ -38,7 +50,7 @@ public class Server implements IRemoteAuction{
         return newItem.getId();
     }
 
-    public String closeAuction(int auctionId)
+    public String closeAuction(int auctionId) throws RemoteException
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
@@ -54,26 +66,59 @@ public class Server implements IRemoteAuction{
         if(toClose.getHighestBidAmount() < toClose.getReservePrice())
         {
             result = "Reserve price was not reached";
-            System.out.println("error: " + result);
+            System.out.println(result);
             return result;
         }
         if(toClose.getHighestBidName() == "No bid")
         {
             result = "There were no bidders for this item";
-            System.out.println("error: " + result);
+            System.out.println(result);
             return result;
         }
-        String name, email, amountString;
+        String name, email;
         float amount;
         name = toClose.getHighestBidName();
         email = toClose.getHighestBidEmail();
         amount = toClose.getHighestBidAmount();
-        amountString = String.format("%.02f", amount);
-        result = "Auction for item ID:" + auctionId + "closed. The winner is " + name + " (" + email + ") with an amount of " + amountString;
+        result = "Auction for item ID:" + auctionId + "closed. The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
         System.out.println("success");
         return result;
     }
 
+    public List<String> browseActiveAuctions() throws RemoteException
+    {
+        List<String> result = new LinkedList<String>();
+        if(auctionItems == null)
+        {
+            result.add("Something has gone wrong");
+            return result;
+        }
+        if(auctionItems.size() == 0)
+        {
+            result.add("There are no items for sale");
+            return result;
+        }
+        for(int i = 1; i < nextId; i++)
+        {
+            AuctionItem item = auctionItems.get(i);
+            if(item != null)
+            {
+                String toAdd = "\n" +
+                "ID: " + item.getId() + "\n" +
+                "   Title: " + item.getTitle() + "\n" +
+                "   Description: " + item.getDescription() + "\n" +
+                "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
+                result.add(toAdd);
+            }
+        }
+        return result;
+    }
+    public boolean placeBid(int itemId, float newPrice, String name, String email) throws RemoteException
+    {
+        AuctionItem toBid = auctionItems.get(itemId);
+        if(toBid == null) return false;
+        return toBid.newBid(newPrice, name, email);
+    }
     public static void main(String[] args) {
         try {
             Server s = new Server();

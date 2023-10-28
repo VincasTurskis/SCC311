@@ -56,17 +56,19 @@ public class AuctionItem implements Serializable {
     }
     public float getHighestBidAmount()
     {
-        if(_bidHistory == null || _bidHistory.size() == 0) return -1;
-        return _bidHistory.get(_bidHistory.size() - 1).bidPrice;
+        return _currentBidPrice;
     }
-    public String newBid(int newPrice, String newBuyerName, String newBuyerEmail)
+    public List<Bid> getBidHistory()
     {
-        
-        if(newPrice <= _currentBidPrice) return "Bid failed: proposed price is lower than current price.";
-        _currentBidPrice = newPrice;
+        return _bidHistory;
+    }
+    public boolean newBid(float newPrice, String newBuyerName, String newBuyerEmail)
+    {
         Bid newBid = new Bid(newPrice, newBuyerName, newBuyerEmail);
+        if(newBid.bidPrice <= _currentBidPrice) return false;
+        _currentBidPrice = newPrice;
         _bidHistory.add(newBid);
-        return "Bid succeeded.";
+        return true;
 
     }
     private class Bid
@@ -80,5 +82,11 @@ public class AuctionItem implements Serializable {
             bidderEmail = email;
             bidPrice = price;
         }
+    }
+
+    public static String currencyToString(float amount)
+    {
+        String result = String.format("%.02f", amount);
+        return result;
     }
 }
