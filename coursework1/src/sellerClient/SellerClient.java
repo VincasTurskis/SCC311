@@ -18,7 +18,7 @@ public class SellerClient{
     boolean loop = true;
     while(loop)
     {
-      System.out.println("Select an action:");
+      System.out.println("\nSelect an action:");
       System.out.println("0. Exit");
       System.out.println("1. List all active auctions");
       System.out.println("2. Create a new listing");
@@ -50,8 +50,18 @@ public class SellerClient{
           float startingPrice, reservePrice;
           System.out.println("Input name of item: ");
           name = input.ReadNextLine();
+          if(name == "")
+          {
+            System.out.println("Error: Name cannot be empty");
+            continue;
+          }
           System.out.println("Write a short description of the item: ");
           description = input.ReadNextLine();
+          if(description == "")
+          {
+            System.out.println("Error: description cannot be empty");
+            continue;
+          }
           System.out.println("Specify the starting price: ");
           startingPrice = input.ReadNextFloat();
           System.out.println("Specify the reserve price: ");
@@ -66,6 +76,24 @@ public class SellerClient{
           {
             System.err.println("Exception:");
             e.printStackTrace();
+          }
+          break;
+        case 3:
+          int id;
+          String toPrint;
+          System.out.println("Enter the ID of the listing to close: ");
+          id = input.ReadNextInt();
+          
+          try
+          {
+            toPrint = server.closeAuction(id);
+            System.out.println(toPrint);
+          }
+          catch(Exception e)
+          {
+            System.out.println("Exception: ");
+            e.printStackTrace();
+            return;
           }
           break;
         default:

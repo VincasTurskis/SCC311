@@ -57,22 +57,22 @@ public class Server implements IRemoteAuction, IBuyer, ISeller{
         String result;
         if(auctionItems == null || auctionItems.get(auctionId) == null)
         {
-            result = "Item does not exist";
+            result = "Error: Item does not exist";
             System.out.println("error: " + result);
             return result;
         }
         AuctionItem toClose = auctionItems.get(auctionId);
         auctionItems.remove(auctionId);
-
-        if(toClose.getHighestBidAmount() < toClose.getReservePrice())
+        result = "Auction for item ID:" + auctionId + " closed. ";
+        if(toClose.getHighestBidName() == "No bid")
         {
-            result = "Reserve price was not reached";
+            result += "There were no bidders for this item";
             System.out.println(result);
             return result;
         }
-        if(toClose.getHighestBidName() == "No bid")
+        if(toClose.getHighestBidAmount() < toClose.getReservePrice())
         {
-            result = "There were no bidders for this item";
+            result += "Reserve price was not reached";
             System.out.println(result);
             return result;
         }
@@ -81,8 +81,8 @@ public class Server implements IRemoteAuction, IBuyer, ISeller{
         name = toClose.getHighestBidName();
         email = toClose.getHighestBidEmail();
         amount = toClose.getHighestBidAmount();
-        result = "Auction for item ID:" + auctionId + "closed. The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
-        System.out.println("success");
+        result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
+        System.out.println(result);
         return result;
     }
 

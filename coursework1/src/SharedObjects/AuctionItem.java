@@ -8,7 +8,7 @@ public class AuctionItem implements Serializable {
     private String _itemDescription;
     private float _reservePrice;
     private float _currentBidPrice;
-    private List<Bid> _bidHistory; // a list that stores all bids, current and previous, on the item.
+    private List<Bid> _bidHistory;  // a list that stores all bids, current and previous, on the item.
                                     // Possible use is recovery if highest bid on closing is invalid
 
     public AuctionItem(int id, String title, String desc, float startingPrice, float reservePrice)
