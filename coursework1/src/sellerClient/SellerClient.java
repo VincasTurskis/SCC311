@@ -76,6 +76,7 @@ public class SellerClient{
           {
             System.err.println("Exception:");
             e.printStackTrace();
+            return;
           }
           break;
         case 3:

@@ -114,11 +114,25 @@ public class Server implements IRemoteAuction, IBuyer, ISeller{
         }
         return result;
     }
-    public boolean placeBid(int itemId, float newPrice, String name, String email) throws RemoteException
+    public String placeBid(int itemId, float newPrice, String name, String email) throws RemoteException
     {
         AuctionItem toBid = auctionItems.get(itemId);
-        if(toBid == null) return false;
-        return toBid.newBid(newPrice, name, email);
+        String result;
+        if(toBid == null)
+        {
+            result = "Error: no item for ID: " + itemId + " found";
+            return result;
+        }
+        boolean bidResult = toBid.newBid(newPrice, name, email);
+        if(!bidResult)
+        {
+            result = "Error: suggested price is lower than current price";
+        }
+        else
+        {
+            result = "New bid placed on item ID: " + itemId + ". New price: " + newPrice;
+        }
+        return result;
     }
     public static void main(String[] args) {
         try {
