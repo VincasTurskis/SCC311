@@ -1,15 +1,20 @@
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/*
+ * A class to represent a rudimentary auction client for Stage 1 level 1.
+ */
 public class AuctionClient{
   public static void main(String[] args) {
     if (args.length != 2) {
       System.out.println("Usage: java AuctionClient {itemId} {clientId}");
       return;
     }
+    // Read argument values. No input sterilization/checking is provided
     int itemId = Integer.parseInt(args[0]);
     int clientId = Integer.parseInt(args[1]);
     try {
+      //Connect to the server
       String name = "basicClient";
       Registry registry = LocateRegistry.getRegistry("localhost");
       IRemoteAuction server = (IRemoteAuction) registry.lookup(name);
@@ -20,6 +25,7 @@ public class AuctionClient{
       }
       else
       {
+        // Print out the required info about an item
         System.out.println("Client: Item found: " + item.print());
       }
     }

@@ -2,15 +2,26 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.LinkedList;
 
+/*
+ * A class that represents a single auction listing
+ */
 public class AuctionItem implements Serializable {
     private int _itemId;
     private String _itemTitle;
     private String _itemDescription;
     private float _reservePrice;
     private float _currentBidPrice;
-    private List<Bid> _bidHistory;  // a list that stores all bids, current and previous, on the item.
+    private List<Bid> _bidHistory;  // A list that stores all bids, current and previous, on the item.
+                                    // Not useful right now - call it future proofing.
                                     // Possible use is recovery if highest bid on closing is invalid
 
+    /*
+     * @param id The ID of the listing - also used as a key in the hash table of the server
+     * @param title The title of the listing
+     * @param desc A short description of the item
+     * @param startingPrice The price that bidding should start on
+     * @reservePrice The reserve price; if the highest bid is lower than the reserve price when auction is closed, the item is not sold
+     */
     public AuctionItem(int id, String title, String desc, float startingPrice, float reservePrice)
     {
         _bidHistory = new LinkedList<Bid>();
@@ -21,6 +32,10 @@ public class AuctionItem implements Serializable {
         _currentBidPrice = startingPrice;
 
     }
+    /*
+     * Prints a summary of the info of the items (Stage 1 Level 1)
+     * @return a string (formatted for printing) with the information
+     */
     public String print()
     {
         String s ="\n   ID: " + _itemId + "\n" +
@@ -28,6 +43,7 @@ public class AuctionItem implements Serializable {
                     "   Description: " + _itemDescription + "\n";
         return s;
     }
+    //Getters
     public int getId()
     {
         return _itemId;
@@ -62,6 +78,13 @@ public class AuctionItem implements Serializable {
     {
         return _bidHistory;
     }
+    /*
+     * Creates a new bid on the item.
+     * @param newPrice The price of the new bid
+     * @param newBuyerName The name of the new bidder
+     * @param newBuyerEmail The email of the new bidder
+     * @return true if the bid was successful, false if the new price is lower than the previous highest price
+     */
     public boolean newBid(float newPrice, String newBuyerName, String newBuyerEmail)
     {
         Bid newBid = new Bid(newPrice, newBuyerName, newBuyerEmail);
@@ -71,6 +94,9 @@ public class AuctionItem implements Serializable {
         return true;
 
     }
+    /*
+     * A helper class to represent a single bid on this item
+     */
     private class Bid
     {
         public float bidPrice;
@@ -84,6 +110,11 @@ public class AuctionItem implements Serializable {
         }
     }
 
+    /*
+     * A static utility function for formatting a currency float into a string truncated down to 2 decimal points
+     * @param amount The amount as a float
+     * @return the amount as a string
+     */
     public static String currencyToString(float amount)
     {
         String result = String.format("%.02f", amount);

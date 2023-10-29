@@ -1,18 +1,29 @@
 import java.util.Scanner;
 import java.util.InputMismatchException;
+
+/*
+ * A utility class for reading and validating user input from the console
+ */
 public class InputProcessor {
     private Scanner s;
     public InputProcessor()
     {
         s = new Scanner(System.in);
     }
+    /*
+     * Gets the next string input from the console. Accounts for and trims white space
+     * @return The input string
+     */
     public String ReadNextLine()
     {
         String result;
         try
         {
+            // Use scanner to read the next line, trim whitespace.
             result = s.nextLine();
             result = result.trim();
+            // If the previous input was read with Scanner.nextInt() or nextFloat(), Scanner.nextLine() will return just the new line characters
+            // Therefore, if the input was just whitespace, scan one more time and trim
             if(result.length() == 0)
             {
                 result = s.nextLine();
@@ -27,58 +38,75 @@ public class InputProcessor {
             return "";
         }
     }
+    /*
+     * Gets the next integer input from the console. Keeps requesting input until a valid one is given.
+     * Does not accept negative numbers.
+     * @return The input integer. -1 if there was an unhandled exception.
+     */
     public int ReadNextInt()
     {
         int result;
-        try
+        while(true)
         {
-            result = s.nextInt();
-            if(result < 0)
+            try
             {
-                System.out.println("Input error: input a positive integer: ");
-                return ReadNextInt();
+                result = s.nextInt();
+                if(result < 0)
+                {
+                    System.out.println("Input error: input a positive integer: ");
+                }
+                else return result;
             }
-            return result;
-        }
-        catch(InputMismatchException e)
-        {
-            System.out.println("Input error: input a valid integer: ");
-            s.nextLine();
-            return ReadNextInt();
-        }
-        catch(Exception e)
-        {
-            System.out.println("Input Exception: ");
-            e.printStackTrace();
-            return -1;
+            catch(InputMismatchException e)
+            {
+                System.out.println("Input error: input a valid integer: ");
+                //Discard the input that was just provided (as it's invalid)
+                s.nextLine();
+            }
+            catch(Exception e)
+            {
+                System.out.println("Input Exception: ");
+                e.printStackTrace();
+                return -1;
+            }
         }
     }
+    /*
+     * Gets the next float input from the console. Keeps requesting input until a valid one is given.
+     * Does not accept negative numbers.
+     * @return The input float. -1 if there was an unhandled exception.
+     */
     public float ReadNextFloat()
     {
         float result;
-        try
+        while(true)
         {
-            result = s.nextFloat();
-            if(result < 0)
+            try
             {
-                System.out.println("Input error: input a positive number: ");
-                return ReadNextFloat();
+                result = s.nextFloat();
+                if(result < 0)
+                {
+                    System.out.println("Input error: input a positive number: ");
+                }
+                else return result;
             }
-            return result;
-        }
-        catch(InputMismatchException e)
-        {
-            System.out.println("Input error: input a valid number: ");
-            s.nextLine();
-            return ReadNextFloat();
-        }
-        catch(Exception e)
-        {
-            System.out.println("Input Exception: ");
-            e.printStackTrace();
-            return -1;
+            catch(InputMismatchException e)
+            {
+                System.out.println("Input error: input a valid number: ");
+                //Discard the input that was just provided (as it's invalid)
+                s.nextLine();
+            }
+            catch(Exception e)
+            {
+                System.out.println("Input Exception: ");
+                e.printStackTrace();
+                return -1;
+            }
         }
     }
+    /*
+     * Closes the input Scanner.
+     */
     public void close()
     {
         s.close();
