@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /*
- * A class for all server-side functions of the auction system (Stage 1 level 1 & 2)
+ * A class for all server-side functions of the auction system (level 2)
  */
 public class Server implements IRemoteAuction{
     // Hash table for all currently listed items
@@ -42,7 +42,7 @@ public class Server implements IRemoteAuction{
     }
 
     /*
-     * Gets the specifics of an auction listing (Stage 1 Level 1)
+     * Gets the specifics of an auction listing (Level 1)
      * @param itemId The ID of the listing
      * @param clientId the ID of the client requesting it
      * @return The listed item, null if no item for the provided ID is found
@@ -53,7 +53,7 @@ public class Server implements IRemoteAuction{
     }
 
     /*
-     * Creates a new auction listing with the provided parameters. Used by the seller client (Stage 1 level 2)
+     * Creates a new auction listing with the provided parameters. Used by the seller client (level 2)
      * @param title The title of the listing
      * @param description A (short) description of the listed item
      * @param startingPrice The starting price for the bids on this item
@@ -78,7 +78,7 @@ public class Server implements IRemoteAuction{
     }
 
     /*
-     * Closes an auction listing, declares a winner if the reserve price was reached. Intended to use by the seller client (Stage 1 Level 2)
+     * Closes an auction listing, declares a winner if the reserve price was reached. Intended to use by the seller client (Level 2)
      * @param auctionId the ID of the listing to close.
      * @return A string (intended for output to console) of the results of the operation. 
      */
@@ -130,7 +130,7 @@ public class Server implements IRemoteAuction{
     }
 
     /*
-     * Gets the list of all active auction listings, intended to use by the buyer client (Stage 1 level 2) 
+     * Gets the list of all active auction listings, intended to use by the buyer client (level 2) 
      * @return a list of strings; each member is a string containing the title, description and current price in a printable format
      */
     public List<String> browseActiveAuctions() throws RemoteException
@@ -165,7 +165,7 @@ public class Server implements IRemoteAuction{
         return result;
     }
     /*
-     * Places a bid on one of the auction listings. Intended to be used by the buyer client (Stage 1 Level 2)
+     * Places a bid on one of the auction listings. Intended to be used by the buyer client (Level 2)
      * @param itemId The ID of the listing to be bid on
      * @param newPrice The bid price
      * @param name The name of the bidder - first piece of identifying information

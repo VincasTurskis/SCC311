@@ -2,7 +2,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 /*
- * A class to represent a rudimentary auction client for Stage 1 level 1.
+ * A class to represent a rudimentary auction client (level 1)
  */
 public class AuctionClient{
   public static void main(String[] args) {

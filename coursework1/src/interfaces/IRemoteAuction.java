@@ -3,7 +3,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 /*
- * A remote interface for the server
+ * A remote interface for the server (level 2)
  */
 public interface IRemoteAuction extends Remote{
     public AuctionItem getSpec (int itemId, int clientId) throws RemoteException;

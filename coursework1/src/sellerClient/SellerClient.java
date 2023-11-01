@@ -1,7 +1,7 @@
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 /*
- * A class representing the seller client (stage 1 level 2)
+ * A class representing the seller client (level 2)
  */
 public class SellerClient{
   public static void main(String[] args) {
