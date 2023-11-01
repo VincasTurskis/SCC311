@@ -10,7 +10,7 @@ import java.util.List;
 /*
  * A class for all server-side functions of the auction system (Stage 1 level 1 & 2)
  */
-public class Server implements IRemoteAuction, IBuyer, ISeller{
+public class Server implements IRemoteAuction{
     // Hash table for all currently listed items
     // The key is the same as the ID field of AuctionItem
     private Hashtable<Integer, AuctionItem> auctionItems;
@@ -201,14 +201,12 @@ public class Server implements IRemoteAuction, IBuyer, ISeller{
             // Setup the server
             Server s = new Server();
             // Setup the different interfaces
-            String basicName = "basicClient", sellerName = "sellerClient", buyerName = "buyerClient";
+            String name = "AuctionServer";
             // Get the RMI registry
             Registry registry = LocateRegistry.getRegistry();
             Remote stub = UnicastRemoteObject.exportObject(s, 0);
             // Advertise the different interfaces (basic, seller, client) on the registry
-            registry.rebind(basicName, (IRemoteAuction) stub);
-            registry.rebind(buyerName, (IBuyer) stub);
-            registry.rebind(sellerName, (ISeller) stub);
+            registry.rebind(name, (IRemoteAuction) stub);
             System.out.println("Server ready");
         } catch (Exception e) {
             System.err.println("Exception:");

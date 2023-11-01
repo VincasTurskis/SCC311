@@ -15,7 +15,7 @@ public class AuctionClient{
     int clientId = Integer.parseInt(args[1]);
     try {
       //Connect to the server
-      String name = "basicClient";
+      String name = "AuctionServer";
       Registry registry = LocateRegistry.getRegistry("localhost");
       IRemoteAuction server = (IRemoteAuction) registry.lookup(name);
       AuctionItem item = server.getSpec(itemId, clientId);

@@ -5,13 +5,13 @@ import java.rmi.registry.Registry;
  */
 public class SellerClient{
   public static void main(String[] args) {
-    ISeller server;
+    IRemoteAuction server;
     InputProcessor input = new InputProcessor();
     //Acquire the correct server interface from the RMI registry
     try {
-      String name = "sellerClient";
+      String name = "AuctionServer";
       Registry registry = LocateRegistry.getRegistry("localhost");
-      server = (ISeller) registry.lookup(name);
+      server = (IRemoteAuction) registry.lookup(name);
     }
     catch (Exception e) {
       System.err.println("Exception:");
