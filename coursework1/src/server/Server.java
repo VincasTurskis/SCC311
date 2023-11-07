@@ -28,11 +28,6 @@ public class Server implements IRemoteAuction{
             createAuction("Fork", "A decent fork.", 500.5555f, 1000f);
             createAuction("Plate", "An ornate plate.", 4.99f, 100f);
             createAuction("Car", "An old car.", 3, 10);
-            // Print created listings
-            for(String s : browseActiveAuctions())
-            {
-                System.out.println(s);
-            }
         }
         catch (Exception e) {
             System.err.println("Exception:");
