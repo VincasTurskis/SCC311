@@ -59,7 +59,7 @@ public class Server implements IRemoteAuction{
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
-        if(title == null || description == null || startingPrice < 0 || reservePrice <= startingPrice)
+        if(title == null || description == null || startingPrice < 0 || reservePrice < 0)
         {
             System.out.println("error, bad arguments");
             return -1;
@@ -152,6 +152,7 @@ public class Server implements IRemoteAuction{
                 "ID: " + item.getId() + "\n" +
                 "   Title: " + item.getTitle() + "\n" +
                 "   Description: " + item.getDescription() + "\n" +
+                "   Starting Price: " + AuctionItem.currencyToString(item.getStartingPrice()) + 
                 "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
                 result.add(toAdd);
             }

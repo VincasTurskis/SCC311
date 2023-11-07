@@ -11,6 +11,7 @@ public class AuctionItem implements Serializable {
     private String _itemDescription;
     private float _reservePrice;
     private float _currentBidPrice;
+    private float _startingPrice;
     private List<Bid> _bidHistory;  // A list that stores all bids, current and previous, on the item.
                                     // Not useful right now - call it future proofing.
                                     // Possible use is recovery if highest bid on closing is invalid
@@ -29,8 +30,8 @@ public class AuctionItem implements Serializable {
         _itemTitle = title;
         _itemDescription = desc;
         _reservePrice = reservePrice;
-        _currentBidPrice = startingPrice;
-
+        _currentBidPrice = 0;
+        _startingPrice = startingPrice;
     }
     /*
      * Prints a summary of the info of the items (Stage 1 Level 1)
@@ -77,6 +78,10 @@ public class AuctionItem implements Serializable {
     public List<Bid> getBidHistory()
     {
         return _bidHistory;
+    }
+    public float getStartingPrice()
+    {
+        return _startingPrice;
     }
     /*
      * Creates a new bid on the item.
