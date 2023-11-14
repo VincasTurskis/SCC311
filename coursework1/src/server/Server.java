@@ -216,6 +216,12 @@ public class Server implements IRemoteAuction{
             result = "Error: no item for ID: " + itemId + " found";
             return result;
         }
+        // Prevent bids on own item
+        if(bidder.equals(toBid.getSellerAccount()))
+        {
+            result = "Error: cannot bid on an item you are selling";
+            return result;
+        }
         boolean bidResult = toBid.newBid(newPrice, bidder);
         // Prevent bids of a lower price than the current highest price
         if(!bidResult)
