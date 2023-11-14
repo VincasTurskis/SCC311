@@ -173,7 +173,7 @@ public class SellerClient{
           case 1: //Switch case for different operations
             try
             {
-              System.out.println(server.browseActiveAuctions());
+              System.out.println(server.FBrowseListings());
             }
             catch (Exception e) {
               System.err.println("Exception:");
@@ -208,7 +208,7 @@ public class SellerClient{
             try
             {
               //Call server function to create a new listing. Return the id if it was successful
-              int id = server.createAuction(itemName, description, startingPrice, reservePrice, currentAccount);
+              int id = server.FCreateAuction(itemName, description, startingPrice, reservePrice, currentAccount);
               System.out.println("Listing created. ID: " + id + "\n");
             }
             catch(Exception e)
@@ -228,7 +228,7 @@ public class SellerClient{
             try
             {
               // Call server function to close auction and print the returned status string
-              toPrint = server.closeAuction(id, currentAccount);
+              toPrint = server.FCloseAuction(id, currentAccount);
               System.out.println(toPrint);
             }
             catch(Exception e)

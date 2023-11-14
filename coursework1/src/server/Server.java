@@ -11,9 +11,16 @@ import java.util.List;
  * A class for all server-side functions of the auction system (level 2)
  */
 public class Server implements IRemoteAuction{
-    // Hash table for all currently listed items
+    // Hash table for all currently listed items for the forward auction
     // The key is the same as the ID field of AuctionItem
-    private Hashtable<Integer, AuctionItem> auctionItems;
+    private Hashtable<Integer, AuctionItem> _forwardAuctionItems;
+
+    // Hash table for all items for the reverse auction
+    // The key is the item ID, the value is a list of all the listings in the category
+
+    private Hashtable<Integer, LinkedList<AuctionItem>> _reverseAuctionItems;
+
+
     // A counter field for the number that will be used as the id for the next added listing
     private Hashtable<String, Account> accounts;
     private int nextId;
@@ -22,7 +29,8 @@ public class Server implements IRemoteAuction{
     public Server() {
         super();
         nextId = 1;
-        auctionItems = new Hashtable<Integer, AuctionItem>();
+        _forwardAuctionItems = new Hashtable<Integer, AuctionItem>();
+        _reverseAuctionItems = new Hashtable<Integer, LinkedList<AuctionItem>>();
         accounts = new Hashtable<String, Account>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
@@ -32,10 +40,10 @@ public class Server implements IRemoteAuction{
         Account exampleSeller = accounts.get("Example@seller.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
-            createAuction("Cup", "A nice cup.", 0, 10, exampleSeller);
-            createAuction("Fork", "A decent fork.", 500.5555f, 1000f, exampleSeller);
-            createAuction("Plate", "An ornate plate.", 4.99f, 100f, exampleSeller);
-            createAuction("Car", "An old car.", 3, 10, exampleSeller);
+            FCreateAuction("Cup", "A nice cup.", 0, 10, exampleSeller);
+            FCreateAuction("Fork", "A decent fork.", 500.5555f, 1000f, exampleSeller);
+            FCreateAuction("Plate", "An ornate plate.", 4.99f, 100f, exampleSeller);
+            FCreateAuction("Car", "An old car.", 3, 10, exampleSeller);
         }
         catch (Exception e) {
             System.err.println("Exception:");
@@ -74,7 +82,7 @@ public class Server implements IRemoteAuction{
      */
     public AuctionItem getSpec (int itemId, int clientId) throws RemoteException
     {
-        return auctionItems.get(itemId);
+        return _forwardAuctionItems.get(itemId);
     }
 
     /*
@@ -85,7 +93,7 @@ public class Server implements IRemoteAuction{
      * @param reservePrice The reserve price of the item - if the listing is closed and the highest bid is below the reserve price, the item will not be sold
      * @return the ID of the new listing. -1 If the arguments were invalid.
      */
-    public int createAuction(String title, String description, float startingPrice, float reservePrice, Account seller) throws RemoteException
+    public int FCreateAuction(String title, String description, float startingPrice, float reservePrice, Account seller) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
@@ -96,7 +104,7 @@ public class Server implements IRemoteAuction{
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
         AuctionItem newItem = new AuctionItem(nextId, title, description, startingPrice, reservePrice, seller);
-        auctionItems.put(nextId, newItem);
+        _forwardAuctionItems.put(nextId, newItem);
         nextId++;
         System.out.println("success");
         return newItem.getId();
@@ -108,33 +116,33 @@ public class Server implements IRemoteAuction{
      * @param requestSource the account that's making the request to close.
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String closeAuction(int auctionId, Account requestSource) throws RemoteException
+    public String FCloseAuction(int auctionId, Account requestSource) throws RemoteException
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
         // Check if the arguments are valid
-        if(auctionItems == null)
+        if(_forwardAuctionItems == null)
         {
             result = "Error: the listing database does not exist. Something went very wrong...";
             System.out.println(result);
             return result;
         }
-        if(auctionItems.get(auctionId) == null)
+        if(_forwardAuctionItems.get(auctionId) == null)
         {
             // If the item ID was not found, return that as a message
             result = "Error: Item does not exist";
             System.out.println(result);
             return result;
         }
-        if(!requestSource.equals(auctionItems.get(auctionId).getSellerAccount()))
+        if(!requestSource.equals(_forwardAuctionItems.get(auctionId).getSellerAccount()))
         {
             result = "Error: You do not have permission to close this listing.";
             System.out.println(result);
             return result;
         }
         // If the arguments are valid, remove the listing regardless if the reserve price was met
-        AuctionItem toClose = auctionItems.get(auctionId);
-        auctionItems.remove(auctionId);
+        AuctionItem toClose = _forwardAuctionItems.get(auctionId);
+        _forwardAuctionItems.remove(auctionId);
         result = "Auction for item ID:" + auctionId + " closed. ";
         // Bloc containing different outcome possibilities
         if(toClose.getHighestBidName() == "No bid") // No bidders
@@ -165,16 +173,16 @@ public class Server implements IRemoteAuction{
      * Gets the list of all active auction listings, intended to use by the buyer client (level 2) 
      * @return a list of strings; each member is a string containing the title, description and current price in a printable format
      */
-    public List<String> browseActiveAuctions() throws RemoteException
+    public List<String> FBrowseListings() throws RemoteException
     {
         List<String> result = new LinkedList<String>();
         // null and empty checks for the list
-        if(auctionItems == null)
+        if(_forwardAuctionItems == null)
         {
             result.add("Something has gone wrong");
             return result;
         }
-        if(auctionItems.size() == 0)
+        if(_forwardAuctionItems.size() == 0)
         {
             result.add("There are no items for sale");
             return result;
@@ -182,7 +190,7 @@ public class Server implements IRemoteAuction{
         // For every item in the hash table, add a formatted string to the list of strings
         for(int i = 1; i < nextId; i++)
         {
-            AuctionItem item = auctionItems.get(i);
+            AuctionItem item = _forwardAuctionItems.get(i);
             if(item != null)
             {
                 String toAdd = "\n" +
@@ -205,10 +213,10 @@ public class Server implements IRemoteAuction{
      * @param email The email address of the bidder - second piece of identifying information
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String placeBid(int itemId, float newPrice, Account bidder) throws RemoteException
+    public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException
     {
         // Get the item to be bid on from the hash table
-        AuctionItem toBid = auctionItems.get(itemId);
+        AuctionItem toBid = _forwardAuctionItems.get(itemId);
         String result;
         // If no item was found, output that
         if(toBid == null)
@@ -235,6 +243,7 @@ public class Server implements IRemoteAuction{
         }
         return result;
     }
+
     public static void main(String[] args) {
         try {
             // Setup the server

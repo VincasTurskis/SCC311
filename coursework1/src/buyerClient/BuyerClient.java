@@ -177,7 +177,7 @@ public class BuyerClient{
           case 1: // Display list of active auction listings
             try
             {
-              System.out.println(server.browseActiveAuctions());
+              System.out.println(server.FBrowseListings());
             }
             catch (Exception e) {
               System.err.println("Exception:");
@@ -198,7 +198,7 @@ public class BuyerClient{
             {
               // Try to place the bid based on the supplied parameters;
               // Print the return string of the server function to console
-              String toPrint = server.placeBid(id, newPrice, currentAccount);
+              String toPrint = server.FPlaceBid(id, newPrice, currentAccount);
               System.out.println(toPrint);
             }
             catch(Exception e)
