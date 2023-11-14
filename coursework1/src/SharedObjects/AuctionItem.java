@@ -12,6 +12,7 @@ public class AuctionItem implements Serializable {
     private float _reservePrice;
     private float _currentBidPrice;
     private float _startingPrice;
+    private Account _seller;
     private List<Bid> _bidHistory;  // A list that stores all bids, current and previous, on the item.
                                     // Not useful right now - call it future proofing.
                                     // Possible use is recovery if highest bid on closing is invalid
@@ -23,7 +24,7 @@ public class AuctionItem implements Serializable {
      * @param startingPrice The price that bidding should start on
      * @reservePrice The reserve price; if the highest bid is lower than the reserve price when auction is closed, the item is not sold
      */
-    public AuctionItem(int id, String title, String desc, float startingPrice, float reservePrice)
+    public AuctionItem(int id, String title, String desc, float startingPrice, float reservePrice, Account seller)
     {
         _bidHistory = new LinkedList<Bid>();
         _itemId = id;
@@ -32,6 +33,7 @@ public class AuctionItem implements Serializable {
         _reservePrice = reservePrice;
         _currentBidPrice = 0;
         _startingPrice = startingPrice;
+        _seller = seller;
     }
     /*
      * Prints a summary of the info of the items (Stage 1 Level 1)
@@ -64,12 +66,16 @@ public class AuctionItem implements Serializable {
     public String getHighestBidName()
     {
         if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidderName;
+        return _bidHistory.get(_bidHistory.size() - 1).bidder.getName();
     }
     public String getHighestBidEmail()
     {
         if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidderEmail;
+        return _bidHistory.get(_bidHistory.size() - 1).bidder.getEmail();
+    }
+    public Account getSellerAccount()
+    {
+        return _seller;
     }
     public float getHighestBidAmount()
     {
@@ -90,9 +96,9 @@ public class AuctionItem implements Serializable {
      * @param newBuyerEmail The email of the new bidder
      * @return true if the bid was successful, false if the new price is lower than the previous highest price
      */
-    public boolean newBid(float newPrice, String newBuyerName, String newBuyerEmail)
+    public boolean newBid(float newPrice, Account bidder)
     {
-        Bid newBid = new Bid(newPrice, newBuyerName, newBuyerEmail);
+        Bid newBid = new Bid(newPrice, bidder);
         if(newBid.bidPrice <= _currentBidPrice) return false;
         _currentBidPrice = newPrice;
         _bidHistory.add(newBid);
@@ -105,12 +111,10 @@ public class AuctionItem implements Serializable {
     private class Bid
     {
         public float bidPrice;
-        public String bidderName;
-        public String bidderEmail;
-        public Bid(float price, String name, String email)
+        public Account bidder;
+        public Bid(float price, Account bidderAccount)
         {
-            bidderName = name;
-            bidderEmail = email;
+            bidder = bidderAccount;
             bidPrice = price;
         }
     }

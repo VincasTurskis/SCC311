@@ -15,6 +15,7 @@ public class Server implements IRemoteAuction{
     // The key is the same as the ID field of AuctionItem
     private Hashtable<Integer, AuctionItem> auctionItems;
     // A counter field for the number that will be used as the id for the next added listing
+    private Hashtable<String, Account> accounts;
     private int nextId;
 
     // Constructor
@@ -22,18 +23,47 @@ public class Server implements IRemoteAuction{
         super();
         nextId = 1;
         auctionItems = new Hashtable<Integer, AuctionItem>();
+        accounts = new Hashtable<String, Account>();
+        try {
+            createAccount("Example Seller", "Example@seller.com", "examplePassword");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Account exampleSeller = accounts.get("Example@seller.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
-            createAuction("Cup", "A nice cup.", 0, 10);
-            createAuction("Fork", "A decent fork.", 500.5555f, 1000f);
-            createAuction("Plate", "An ornate plate.", 4.99f, 100f);
-            createAuction("Car", "An old car.", 3, 10);
+            createAuction("Cup", "A nice cup.", 0, 10, exampleSeller);
+            createAuction("Fork", "A decent fork.", 500.5555f, 1000f, exampleSeller);
+            createAuction("Plate", "An ornate plate.", 4.99f, 100f, exampleSeller);
+            createAuction("Car", "An old car.", 3, 10, exampleSeller);
         }
         catch (Exception e) {
             System.err.println("Exception:");
             e.printStackTrace();
         }
 
+    }
+
+    public boolean createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException
+    {
+        if(name == null || email == null || password == null) return false;
+        Account a = new Account(name, email, password);
+        Account existing = accounts.get(email);
+        if(existing != null)
+        {
+            return false;
+        }
+        accounts.put(email, a);
+        System.out.println("Server: Created account for " + email);
+        return true;
+    }
+
+    public Account login(String email, String password) throws InvalidPasswordException, RemoteException
+    {
+        Account a = accounts.get(email);
+        if(a == null) return null;
+        if(!a.validatePassword(password)) return null;
+        return a;
     }
 
     /*
@@ -55,7 +85,7 @@ public class Server implements IRemoteAuction{
      * @param reservePrice The reserve price of the item - if the listing is closed and the highest bid is below the reserve price, the item will not be sold
      * @return the ID of the new listing. -1 If the arguments were invalid.
      */
-    public int createAuction(String title, String description, float startingPrice, float reservePrice) throws RemoteException
+    public int createAuction(String title, String description, float startingPrice, float reservePrice, Account seller) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
@@ -65,7 +95,7 @@ public class Server implements IRemoteAuction{
             return -1;
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
-        AuctionItem newItem = new AuctionItem(nextId, title, description, startingPrice, reservePrice);
+        AuctionItem newItem = new AuctionItem(nextId, title, description, startingPrice, reservePrice, seller);
         auctionItems.put(nextId, newItem);
         nextId++;
         System.out.println("success");
@@ -75,9 +105,10 @@ public class Server implements IRemoteAuction{
     /*
      * Closes an auction listing, declares a winner if the reserve price was reached. Intended to use by the seller client (Level 2)
      * @param auctionId the ID of the listing to close.
+     * @param requestSource the account that's making the request to close.
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String closeAuction(int auctionId) throws RemoteException
+    public String closeAuction(int auctionId, Account requestSource) throws RemoteException
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
@@ -92,6 +123,12 @@ public class Server implements IRemoteAuction{
         {
             // If the item ID was not found, return that as a message
             result = "Error: Item does not exist";
+            System.out.println(result);
+            return result;
+        }
+        if(!requestSource.equals(auctionItems.get(auctionId).getSellerAccount()))
+        {
+            result = "Error: You do not have permission to close this listing.";
             System.out.println(result);
             return result;
         }
@@ -168,7 +205,7 @@ public class Server implements IRemoteAuction{
      * @param email The email address of the bidder - second piece of identifying information
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String placeBid(int itemId, float newPrice, String name, String email) throws RemoteException
+    public String placeBid(int itemId, float newPrice, Account bidder) throws RemoteException
     {
         // Get the item to be bid on from the hash table
         AuctionItem toBid = auctionItems.get(itemId);
@@ -179,7 +216,7 @@ public class Server implements IRemoteAuction{
             result = "Error: no item for ID: " + itemId + " found";
             return result;
         }
-        boolean bidResult = toBid.newBid(newPrice, name, email);
+        boolean bidResult = toBid.newBid(newPrice, bidder);
         // Prevent bids of a lower price than the current highest price
         if(!bidResult)
         {
