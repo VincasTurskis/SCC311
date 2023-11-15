@@ -18,21 +18,20 @@ public class Server implements IRemoteAuction{
     // Hash table for all items for the reverse auction
     // The key is the item ID, the value is a list of all the listings in the category
 
-    private Hashtable<Integer, ReverseAuctionItem> _reverseAuctionItems;
+    private Hashtable<String, ReverseAuctionItem> _reverseAuctionItems;
 
 
     // A counter field for the number that will be used as the id for the next added listing
     private Hashtable<String, Account> accounts;
-    private int FNextID, RNextID;
+    private int FNextID;
 
     // Constructor
     public Server() {
         super();
         FNextID = 1;
-        RNextID = 1;
         //DNextID = 1;
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
-        _reverseAuctionItems = new Hashtable<Integer, ReverseAuctionItem>();
+        _reverseAuctionItems = new Hashtable<String, ReverseAuctionItem>();
         accounts = new Hashtable<String, Account>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
@@ -259,14 +258,13 @@ public class Server implements IRemoteAuction{
             result.add("There are no items for sale");
             return result;
         }
-        for(int i = 1; i < RNextID; i++)
+        for(String s : _reverseAuctionItems.keySet())
         {
-            ReverseAuctionItem item = _reverseAuctionItems.get(i);
+            ReverseAuctionItem item = _reverseAuctionItems.get(s);
             if(item != null)
             {
                 String toAdd = "\n" +
-                "ID: " + item.getId() + "\n" +
-                "   Title: " + item.getTitle() + "\n" +
+                "Name: " + item.getTitle() + "\n" +
                 "   Description: " + item.getDescription() + "\n";
                 if(item.getLowestPrice() < 0)
                 {
