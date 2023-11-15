@@ -358,6 +358,7 @@ public class Server implements IRemoteAuction{
     public static void main(String[] args) {
         try {
             InputProcessor.clearConsole();
+            System.out.println("Starting server...");
             // Setup the server
             Server s = new Server();
             // Setup the different interfaces
