@@ -18,7 +18,7 @@ public class Server implements IRemoteAuction{
     // Hash table for all items for the reverse auction
     // The key is the item ID, the value is a list of all the listings in the category
 
-    private Hashtable<Integer, LinkedList<ForwardAuctionItem>> _reverseAuctionItems;
+    private Hashtable<Integer, ReverseAuctionItem> _reverseAuctionItems;
 
 
     // A counter field for the number that will be used as the id for the next added listing
@@ -30,7 +30,7 @@ public class Server implements IRemoteAuction{
         super();
         nextId = 1;
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
-        _reverseAuctionItems = new Hashtable<Integer, LinkedList<ForwardAuctionItem>>();
+        _reverseAuctionItems = new Hashtable<Integer, ReverseAuctionItem>();
         accounts = new Hashtable<String, Account>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");

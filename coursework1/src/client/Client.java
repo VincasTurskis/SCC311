@@ -21,7 +21,7 @@ public class Client{
     while(true)
     {
       Account currentAccount = null;
-      System.out.println("Welcome to SellerClient!\n");
+      System.out.println("Welcome to the auction client!\n");
       System.out.println("Select an action:");
       System.out.println("0. Exit");
       System.out.println("1. Login");
@@ -169,7 +169,8 @@ public class Client{
             return;
           case 1: // forward auction
             ForwardAuctionClient.run(currentAccount, input, server);
-          case 2:
+          case 2: // reverse auction
+            ReverseAuctionClient.run(currentAccount, input, server);
             break;
           case 3:
             break;

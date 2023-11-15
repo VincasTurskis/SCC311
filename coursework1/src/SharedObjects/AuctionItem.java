@@ -1,4 +1,6 @@
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 /*
  * An extendable class that represents a single auction listing
@@ -8,7 +10,7 @@ public class AuctionItem implements Serializable {
     protected String _itemTitle;
     protected String _itemDescription;
     protected Account _seller;
-
+    protected List<Bid> _bids;    // A list that stores all bids on the item
     /*
      * @param id The ID of the listing - also used as a key in the hash table of the server
      * @param title The title of the listing
@@ -18,6 +20,7 @@ public class AuctionItem implements Serializable {
      */
     public AuctionItem(int id, String title, String desc, Account seller)
     {
+        _bids = new LinkedList<Bid>();
         _itemId = id;
         _itemTitle = title;
         _itemDescription = desc;
@@ -51,7 +54,6 @@ public class AuctionItem implements Serializable {
     {
         return _seller;
     }
-
     /*
      * A static utility function for formatting a currency float into a string truncated down to 2 decimal points
      * @param amount The amount as a float
@@ -61,5 +63,18 @@ public class AuctionItem implements Serializable {
     {
         String result = String.format("%.02f", amount);
         return result;
+    }
+    /*
+     * A helper class to represent a single bid on this item
+     */
+    protected class Bid
+    {
+        public float bidPrice;
+        public Account bidder;
+        public Bid(float price, Account bidderAccount)
+        {
+            bidder = bidderAccount;
+            bidPrice = price;
+        }
     }
 }

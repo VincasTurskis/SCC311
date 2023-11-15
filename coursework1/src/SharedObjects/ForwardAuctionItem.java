@@ -1,17 +1,12 @@
-import java.util.LinkedList;
 import java.util.List;
 
 public class ForwardAuctionItem extends AuctionItem{
     protected float _reservePrice;
     protected float _currentBidPrice;
     protected float _startingPrice;
-    protected List<Bid> _bidHistory;  // A list that stores all bids, current and previous, on the item.
-    // Not useful right now - call it future proofing.
-    // Possible use is recovery if highest bid on closing is invalid
     public ForwardAuctionItem(int id, String title, String desc, float startingPrice, float reservePrice, Account seller)
     {
         super(id, title, desc, seller);
-        _bidHistory = new LinkedList<Bid>();
         _reservePrice = reservePrice;
         _currentBidPrice = 0;
         _startingPrice = startingPrice;
@@ -30,17 +25,17 @@ public class ForwardAuctionItem extends AuctionItem{
     }
         public List<Bid> getBidHistory()
     {
-        return _bidHistory;
+        return _bids;
     }
     public String getHighestBidName()
     {
-        if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidder.getName();
+        if(_bids == null || _bids.size() == 0) return "No bid";
+        return _bids.get(_bids.size() - 1).bidder.getName();
     }
     public String getHighestBidEmail()
     {
-        if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidder.getEmail();
+        if(_bids == null || _bids.size() == 0) return "No bid";
+        return _bids.get(_bids.size() - 1).bidder.getEmail();
     }
     /*
      * Creates a new bid on the item.
@@ -54,22 +49,8 @@ public class ForwardAuctionItem extends AuctionItem{
         Bid newBid = new Bid(newPrice, bidder);
         if(newBid.bidPrice <= _currentBidPrice) return false;
         _currentBidPrice = newPrice;
-        _bidHistory.add(newBid);
+        _bids.add(newBid);
         return true;
-
-    }
-    /*
-     * A helper class to represent a single bid on this item
-     */
-    private class Bid
-    {
-        public float bidPrice;
-        public Account bidder;
-        public Bid(float price, Account bidderAccount)
-        {
-            bidder = bidderAccount;
-            bidPrice = price;
-        }
     }
 }
 
