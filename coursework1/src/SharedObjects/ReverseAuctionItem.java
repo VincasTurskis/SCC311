@@ -19,12 +19,24 @@ public class ReverseAuctionItem extends AuctionItem{
         }
         return;
     }
-    public float getLowestPrice()
+    public float getLowestBidPrice()
     {
         if(_bids.size() <= 0)
         {
             return -1;
         }
         return _bids.get(0).bidPrice;
+    }
+    public Account getLowestBidder()
+    {
+        if(_bids.size() <= 0)
+        {
+            return null;
+        }
+        return _bids.get(0).bidder;
+    }
+    public void buyLowest()
+    {
+        _bids.remove(0);
     }
 }

@@ -16,4 +16,7 @@ public interface IRemoteAuction extends Remote{
     public List<String> RBrowseListings() throws RemoteException;
     public String RCreateListing(String name, String description) throws RemoteException;
     public String RAddEntryToListing(String name, float price, Account seller) throws RemoteException;
+    public String RBuyItem(String name, Account buyer) throws RemoteException;
+    public String RGetSpec(String name) throws RemoteException;
+    public boolean RExists(String name) throws RemoteException;
 }

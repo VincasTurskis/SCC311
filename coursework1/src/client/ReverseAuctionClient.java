@@ -14,11 +14,13 @@ public class ReverseAuctionClient {
             // use the InputProcessor class to get the next int from terminal input
             int option = input.ReadNextInt();
             //check if input is correct
-            while(option < 0 || option > 4)
+            while(option < 0 || option > 3)
             {
-                System.out.println("Error: input a number 0-4");
+                System.out.println("Error: input a number 0-3");
                 option = input.ReadNextInt();
             }
+            String itemName = "", result = "";
+            float price = -1;
             switch (option) {
                 case 0: // back
                     InputProcessor.clearConsole();
@@ -35,8 +37,6 @@ public class ReverseAuctionClient {
                     break;
                 case 2:
                     System.out.println("Listing an item for sale...");
-                    String itemName, result = "";
-                    float price;
                     System.out.println("Input name of item: ");
                     itemName = input.ReadNextLine();
                     if(itemName == "")
@@ -52,7 +52,7 @@ public class ReverseAuctionClient {
                         if(result.equals("Listing does not exist"))
                         {
                             System.out.println("There are no other listings for this item.");
-                            System.out.println("Create a new listing (Y/N)?");
+                            System.out.println("Create a new listing? (Y/N)");
                             String YN = input.ReadNextLine();
                             switch (YN) {
                                 case "y":
@@ -82,7 +82,7 @@ public class ReverseAuctionClient {
                                     System.out.println("Aborting...");
                                     continue;
                                 default:
-                                    System.err.println("Option not recognized. Aborting...");
+                                    System.out.println("Option not recognized. Aborting...");
                                     continue;
                             }
                         }
@@ -98,10 +98,39 @@ public class ReverseAuctionClient {
                     }
                     break;
                 case 3:
-                    
-                    break;
-                case 4:
-                    
+                    System.err.println("Purchasing an item");
+                    System.out.println("Input name of item: ");
+                    itemName = input.ReadNextLine();
+                    if(itemName == "")
+                    {
+                        System.out.println("Error: Name cannot be empty");
+                        continue;
+                    }
+                    try {
+                        String toPrint = server.RGetSpec(itemName);
+                        System.out.println(toPrint);
+                        if(server.RExists(itemName))
+                        {
+                            System.out.println("Purchase at stated price? (Y/N)");
+                            String YN = input.ReadNextLine();
+                            switch (YN) {
+                                case "y":
+                                case "Y":
+                                    toPrint = server.RBuyItem(itemName, currentAccount);
+                                    System.out.println(toPrint);
+                                    break;
+                                case "n":
+                                case "N":
+                                    continue;
+                                default:
+                                    System.out.println("Option not recognized. Aborting...");
+                                    continue;
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                     break;
                 default:
                     break;

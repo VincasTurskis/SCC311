@@ -266,7 +266,7 @@ public class Server implements IRemoteAuction{
                 String toAdd = "\n" +
                 "Name: " + item.getTitle() + "\n" +
                 "   Description: " + item.getDescription() + "\n";
-                if(item.getLowestPrice() < 0)
+                if(item.getLowestBidPrice() < 0)
                 {
                     toAdd +=
                     "   There are no active listings for this item";
@@ -274,7 +274,7 @@ public class Server implements IRemoteAuction{
                 else
                 {
                     toAdd += 
-                    "   Current Lowest Price: " + ForwardAuctionItem.currencyToString(item.getLowestPrice());
+                    "   Current Lowest Price: " + ForwardAuctionItem.currencyToString(item.getLowestBidPrice());
                 }
                 result.add(toAdd);
             }
@@ -314,6 +314,46 @@ public class Server implements IRemoteAuction{
         item.newBid(price, seller);
         result = "Successfully added new offer for " + name + " at " + AuctionItem.currencyToString(price);
         return result;
+    }
+    public String RBuyItem(String name, Account buyer) throws RemoteException
+    {
+        if(name == null) return "Error: Invalid arguments";
+        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
+        if(rai == null) return "Error: No item \"" + name + "\" found";
+        if(buyer.equals(rai.getLowestBidder()))
+        {
+            return "Error: You cannot buy an item you are selling";
+        }
+        if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+        {
+            return "No active listings for " + name + "have been found.";
+        }
+        float purchasePrice = rai.getLowestBidPrice();
+        rai.buyLowest();
+        String result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
+        System.out.println("Server: " + buyer.getName() + " " + result);
+        return result;
+    }
+    public String RGetSpec(String name) throws RemoteException
+    {
+        if(name == null) return "Error: Name cannot be null";
+        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
+        if(rai == null) return "Error: No item \"" + name + "\" found";
+        if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+        {
+            return "No active listings for " + name + "have been found.";
+        }
+        String result =
+        "   Description: " + rai.getDescription() + "\n" +
+        "   Lowest price: " + AuctionItem.currencyToString(rai.getLowestBidPrice());
+        return result;
+    }
+    public boolean RExists(String name) throws RemoteException
+    {
+        if(name == null) return false;
+        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
+        if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f) return false;
+        return true;
     }
     public static void main(String[] args) {
         try {
