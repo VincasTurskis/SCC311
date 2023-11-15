@@ -1,21 +1,13 @@
 import java.io.Serializable;
-import java.util.List;
-import java.util.LinkedList;
 
 /*
- * A class that represents a single auction listing
+ * An extendable class that represents a single auction listing
  */
 public class AuctionItem implements Serializable {
-    private int _itemId;
-    private String _itemTitle;
-    private String _itemDescription;
-    private float _reservePrice;
-    private float _currentBidPrice;
-    private float _startingPrice;
-    private Account _seller;
-    private List<Bid> _bidHistory;  // A list that stores all bids, current and previous, on the item.
-                                    // Not useful right now - call it future proofing.
-                                    // Possible use is recovery if highest bid on closing is invalid
+    protected int _itemId;
+    protected String _itemTitle;
+    protected String _itemDescription;
+    protected Account _seller;
 
     /*
      * @param id The ID of the listing - also used as a key in the hash table of the server
@@ -24,15 +16,11 @@ public class AuctionItem implements Serializable {
      * @param startingPrice The price that bidding should start on
      * @reservePrice The reserve price; if the highest bid is lower than the reserve price when auction is closed, the item is not sold
      */
-    public AuctionItem(int id, String title, String desc, float startingPrice, float reservePrice, Account seller)
+    public AuctionItem(int id, String title, String desc, Account seller)
     {
-        _bidHistory = new LinkedList<Bid>();
         _itemId = id;
         _itemTitle = title;
         _itemDescription = desc;
-        _reservePrice = reservePrice;
-        _currentBidPrice = 0;
-        _startingPrice = startingPrice;
         _seller = seller;
     }
     /*
@@ -59,64 +47,9 @@ public class AuctionItem implements Serializable {
     {
         return _itemDescription;
     }
-    public float getReservePrice()
-    {
-        return _reservePrice;
-    }
-    public String getHighestBidName()
-    {
-        if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidder.getName();
-    }
-    public String getHighestBidEmail()
-    {
-        if(_bidHistory == null || _bidHistory.size() == 0) return "No bid";
-        return _bidHistory.get(_bidHistory.size() - 1).bidder.getEmail();
-    }
     public Account getSellerAccount()
     {
         return _seller;
-    }
-    public float getHighestBidAmount()
-    {
-        return _currentBidPrice;
-    }
-    public List<Bid> getBidHistory()
-    {
-        return _bidHistory;
-    }
-    public float getStartingPrice()
-    {
-        return _startingPrice;
-    }
-    /*
-     * Creates a new bid on the item.
-     * @param newPrice The price of the new bid
-     * @param newBuyerName The name of the new bidder
-     * @param newBuyerEmail The email of the new bidder
-     * @return true if the bid was successful, false if the new price is lower than the previous highest price
-     */
-    public boolean newBid(float newPrice, Account bidder)
-    {
-        Bid newBid = new Bid(newPrice, bidder);
-        if(newBid.bidPrice <= _currentBidPrice) return false;
-        _currentBidPrice = newPrice;
-        _bidHistory.add(newBid);
-        return true;
-
-    }
-    /*
-     * A helper class to represent a single bid on this item
-     */
-    private class Bid
-    {
-        public float bidPrice;
-        public Account bidder;
-        public Bid(float price, Account bidderAccount)
-        {
-            bidder = bidderAccount;
-            bidPrice = price;
-        }
     }
 
     /*

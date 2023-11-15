@@ -13,12 +13,12 @@ import java.util.List;
 public class Server implements IRemoteAuction{
     // Hash table for all currently listed items for the forward auction
     // The key is the same as the ID field of AuctionItem
-    private Hashtable<Integer, AuctionItem> _forwardAuctionItems;
+    private Hashtable<Integer, ForwardAuctionItem> _forwardAuctionItems;
 
     // Hash table for all items for the reverse auction
     // The key is the item ID, the value is a list of all the listings in the category
 
-    private Hashtable<Integer, LinkedList<AuctionItem>> _reverseAuctionItems;
+    private Hashtable<Integer, LinkedList<ForwardAuctionItem>> _reverseAuctionItems;
 
 
     // A counter field for the number that will be used as the id for the next added listing
@@ -29,8 +29,8 @@ public class Server implements IRemoteAuction{
     public Server() {
         super();
         nextId = 1;
-        _forwardAuctionItems = new Hashtable<Integer, AuctionItem>();
-        _reverseAuctionItems = new Hashtable<Integer, LinkedList<AuctionItem>>();
+        _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
+        _reverseAuctionItems = new Hashtable<Integer, LinkedList<ForwardAuctionItem>>();
         accounts = new Hashtable<String, Account>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
@@ -80,7 +80,7 @@ public class Server implements IRemoteAuction{
      * @param clientId the ID of the client requesting it
      * @return The listed item, null if no item for the provided ID is found
      */
-    public AuctionItem getSpec (int itemId, int clientId) throws RemoteException
+    public ForwardAuctionItem getSpec (int itemId, int clientId) throws RemoteException
     {
         return _forwardAuctionItems.get(itemId);
     }
@@ -103,7 +103,7 @@ public class Server implements IRemoteAuction{
             return -1;
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
-        AuctionItem newItem = new AuctionItem(nextId, title, description, startingPrice, reservePrice, seller);
+        ForwardAuctionItem newItem = new ForwardAuctionItem(nextId, title, description, startingPrice, reservePrice, seller);
         _forwardAuctionItems.put(nextId, newItem);
         nextId++;
         System.out.println("success");
@@ -141,7 +141,7 @@ public class Server implements IRemoteAuction{
             return result;
         }
         // If the arguments are valid, remove the listing regardless if the reserve price was met
-        AuctionItem toClose = _forwardAuctionItems.get(auctionId);
+        ForwardAuctionItem toClose = _forwardAuctionItems.get(auctionId);
         _forwardAuctionItems.remove(auctionId);
         result = "Auction for item ID:" + auctionId + " closed. ";
         // Bloc containing different outcome possibilities
@@ -164,7 +164,7 @@ public class Server implements IRemoteAuction{
         email = toClose.getHighestBidEmail();
         amount = toClose.getHighestBidAmount();
         // Return the details of the winner, and the closing price
-        result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
+        result += "The winner is " + name + " (" + email + ") with an amount of " + ForwardAuctionItem.currencyToString(amount);
         System.out.println(result);
         return result;
     }
@@ -190,15 +190,15 @@ public class Server implements IRemoteAuction{
         // For every item in the hash table, add a formatted string to the list of strings
         for(int i = 1; i < nextId; i++)
         {
-            AuctionItem item = _forwardAuctionItems.get(i);
+            ForwardAuctionItem item = _forwardAuctionItems.get(i);
             if(item != null)
             {
                 String toAdd = "\n" +
                 "ID: " + item.getId() + "\n" +
                 "   Title: " + item.getTitle() + "\n" +
                 "   Description: " + item.getDescription() + "\n" +
-                "   Starting Price: " + AuctionItem.currencyToString(item.getStartingPrice()) + 
-                "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
+                "   Starting Price: " + ForwardAuctionItem.currencyToString(item.getStartingPrice()) + 
+                "   Current Price: " + ForwardAuctionItem.currencyToString(item.getHighestBidAmount());
                 result.add(toAdd);
             }
         }
@@ -216,7 +216,7 @@ public class Server implements IRemoteAuction{
     public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException
     {
         // Get the item to be bid on from the hash table
-        AuctionItem toBid = _forwardAuctionItems.get(itemId);
+        ForwardAuctionItem toBid = _forwardAuctionItems.get(itemId);
         String result;
         // If no item was found, output that
         if(toBid == null)
