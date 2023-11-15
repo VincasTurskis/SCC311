@@ -5,12 +5,12 @@ public class ReverseAuctionClient {
         while(actionLoop)
         {
             // Display selection menu in terminal
+            System.out.println("Reverse Auction");
             System.out.println("\nSelect an action:");
             System.out.println("0. Back");
             System.out.println("1. List all active auctions");
-            System.out.println("2. Create a new category");
-            System.out.println("3. Add a listing to an existing category");
-            System.out.println("4. Bid on an item");
+            System.out.println("2. Sell an item");
+            System.out.println("3. Buy an item");
             // use the InputProcessor class to get the next int from terminal input
             int option = input.ReadNextInt();
             //check if input is correct
@@ -21,7 +21,7 @@ public class ReverseAuctionClient {
             }
             switch (option) {
                 case 0: // back
-                InputProcessor.clearConsole();
+                    InputProcessor.clearConsole();
                     return;
                 case 1: // browse listings
                     try
@@ -34,7 +34,68 @@ public class ReverseAuctionClient {
                     }
                     break;
                 case 2:
-                    
+                    System.out.println("Listing an item for sale...");
+                    String itemName, result = "";
+                    float price;
+                    System.out.println("Input name of item: ");
+                    itemName = input.ReadNextLine();
+                    if(itemName == "")
+                    {
+                        System.out.println("Error: Name cannot be empty");
+                        continue;
+                    }
+                    System.out.println("Specify the selling price: ");
+                    price = input.ReadNextFloat();
+                    try
+                    {
+                        result = server.RAddEntryToListing(itemName, price, currentAccount);
+                        if(result.equals("Listing does not exist"))
+                        {
+                            System.out.println("There are no other listings for this item.");
+                            System.out.println("Create a new listing (Y/N)?");
+                            String YN = input.ReadNextLine();
+                            switch (YN) {
+                                case "y":
+                                case "Y":
+                                    System.out.println("Write a short description of the item: ");
+                                    String description = input.ReadNextLine();
+                                    if(description == "")
+                                    {
+                                        System.out.println("Error: description cannot be empty");
+                                        continue;
+                                    }
+                                    System.out.println("Creating a new listing...\n");
+                                    result = server.RCreateListing(itemName, description);
+                                    if(result.equals("Created new listing for " + itemName))
+                                    {
+                                        result = server.RAddEntryToListing(itemName, price, currentAccount);
+                                        System.out.println(result);
+                                    }
+                                    else
+                                    {
+                                        System.out.println("Error: " + result);
+                                        continue;
+                                    }
+                                    break;
+                                case "n":
+                                case "N":
+                                    System.out.println("Aborting...");
+                                    continue;
+                                default:
+                                    System.err.println("Option not recognized. Aborting...");
+                                    continue;
+                            }
+                        }
+                        else
+                        {
+                            System.out.println("Error: " + result);
+                            continue;
+                        }
+                    } catch(Exception e)
+                    {
+                        e.printStackTrace();
+                        return;
+                    }
                     break;
                 case 3:
                     

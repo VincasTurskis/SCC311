@@ -3,11 +3,11 @@
 import java.util.Collections;
 
 public class ReverseAuctionItem extends AuctionItem{
-    public ReverseAuctionItem(int id, String title, String desc, Account seller)
+    public ReverseAuctionItem(String title, String desc)
     {
-        super(id, title, desc, seller);
+        super(title, desc);
     }
-    public boolean newBid(float price, Account bidder)
+    public void newBid(float price, Account bidder)
     {
         Bid b = new Bid(price, bidder);
         _bids.add(b);
@@ -17,7 +17,7 @@ public class ReverseAuctionItem extends AuctionItem{
             int index = _bids.indexOf(b);
             Collections.swap(_bids, index, index-1);
         }
-        return true;
+        return;
     }
     public float getLowestPrice()
     {

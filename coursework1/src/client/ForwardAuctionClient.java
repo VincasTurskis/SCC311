@@ -5,6 +5,7 @@ public class ForwardAuctionClient {
         while(actionLoop)
         {
         // Display selection menu in terminal
+        System.out.println("Forward Auction");
         System.out.println("\nSelect an action:");
         System.out.println("0. Back");
         System.out.println("1. List all active auctions");
@@ -38,7 +39,7 @@ public class ForwardAuctionClient {
                 System.out.println("Creating a new listing...");
                 String itemName, description;
                 float startingPrice, reservePrice;
-                // Bloc of code to prompt the user and read their input
+                // Block of code to prompt the user and read their input
                 System.out.println("Input name of item: ");
                 itemName = input.ReadNextLine();
                 if(itemName == "")

@@ -281,10 +281,39 @@ public class Server implements IRemoteAuction{
         }
         return result;
     }
-    public String RCreateListing()
+    public String RCreateListing(String name, String description) throws RemoteException
     {
-
-        return "";
+        String result = "";
+        if(name == null || description == null)
+        {
+            result = "Invalid arguments";
+            return result;
+        }
+        if(_reverseAuctionItems.containsKey(name))
+        {
+            result = "Listing already exists";
+        }
+        _reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
+        result = "Created new listing for " + name;
+        return result;
+    }
+    public String RAddEntryToListing(String name, float price, Account seller) throws RemoteException
+    {
+        String result = "";
+        if(name == null || price < 0 || seller == null)
+        {
+            result = "Invalid arguments";
+            return result;
+        }
+        ReverseAuctionItem item = _reverseAuctionItems.get(name);
+        if(item == null)
+        {
+            result = "Listing does not exist";
+            return result;
+        }
+        item.newBid(price, seller);
+        result = "Successfully added new offer for " + name + " at " + AuctionItem.currencyToString(price);
+        return result;
     }
     public static void main(String[] args) {
         try {
