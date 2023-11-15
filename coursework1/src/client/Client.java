@@ -1,12 +1,13 @@
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 /*
- * A class representing the shared buyer/seller client (level 3-5)
- */
+* A class representing the shared buyer/seller client (level 3-5)
+*/
 public class Client{
   public static void main(String[] args) {
     IRemoteAuction server;
     InputProcessor input = new InputProcessor();
+    InputProcessor.clearConsole();
     //Acquire the correct server interface from the RMI registry
     try {
       String name = "AuctionServer";
@@ -35,16 +36,19 @@ public class Client{
         System.out.println("Error: input a number 0-2");
         loginOption = input.ReadNextInt();
       }
+      InputProcessor.clearConsole();
       String accountName = "", email = "", password = "";
       switch (loginOption) {
         case 0: // exit
           input.close();
           return;
         case 1: // login
+        System.out.println("Login:\n");
           System.out.println("Enter your email address: ");
           email = input.ReadNextLine();
           System.out.println("Enter your password: ");
           password = input.ReadNextLine();
+          InputProcessor.clearConsole();
           System.out.print("Logging in... ");
           try {
             currentAccount = server.login(email, password);
@@ -69,6 +73,7 @@ public class Client{
           }
           break;
         case 2: // create account;
+          System.out.println("Create account:\n");
           System.out.println("Enter your name: ");
           accountName = input.ReadNextLine();
           if(accountName.equals(""))
@@ -146,7 +151,8 @@ public class Client{
         default:
           break;
       }
-      while(true)
+      boolean sessionLoop = true;
+      while(sessionLoop)
       {
         System.out.println("\nSelect the type of auction to participate in:");
         System.out.println("0. Exit");
@@ -162,6 +168,7 @@ public class Client{
             System.out.println("Error: input a number 0-4");
             option = input.ReadNextInt();
         }
+        InputProcessor.clearConsole();
         //Switch case for different operations
         switch (option) {
           case 0: // Exit
@@ -169,6 +176,7 @@ public class Client{
             return;
           case 1: // forward auction
             ForwardAuctionClient.run(currentAccount, input, server);
+            break;
           case 2: // reverse auction
             ReverseAuctionClient.run(currentAccount, input, server);
             break;
@@ -178,7 +186,8 @@ public class Client{
             System.out.println("Logging out...");
             System.out.println("");
             currentAccount = null;
-            continue;
+            sessionLoop = false;
+            break;
           default:
             break;
         }

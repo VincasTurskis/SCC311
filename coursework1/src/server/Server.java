@@ -23,12 +23,14 @@ public class Server implements IRemoteAuction{
 
     // A counter field for the number that will be used as the id for the next added listing
     private Hashtable<String, Account> accounts;
-    private int nextId;
+    private int FNextID, RNextID;
 
     // Constructor
     public Server() {
         super();
-        nextId = 1;
+        FNextID = 1;
+        RNextID = 1;
+        //DNextID = 1;
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
         _reverseAuctionItems = new Hashtable<Integer, ReverseAuctionItem>();
         accounts = new Hashtable<String, Account>();
@@ -103,9 +105,9 @@ public class Server implements IRemoteAuction{
             return -1;
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
-        ForwardAuctionItem newItem = new ForwardAuctionItem(nextId, title, description, startingPrice, reservePrice, seller);
-        _forwardAuctionItems.put(nextId, newItem);
-        nextId++;
+        ForwardAuctionItem newItem = new ForwardAuctionItem(FNextID, title, description, startingPrice, reservePrice, seller);
+        _forwardAuctionItems.put(FNextID, newItem);
+        FNextID++;
         System.out.println("success");
         return newItem.getId();
     }
@@ -188,7 +190,7 @@ public class Server implements IRemoteAuction{
             return result;
         }
         // For every item in the hash table, add a formatted string to the list of strings
-        for(int i = 1; i < nextId; i++)
+        for(int i = 1; i < FNextID; i++)
         {
             ForwardAuctionItem item = _forwardAuctionItems.get(i);
             if(item != null)
@@ -244,8 +246,51 @@ public class Server implements IRemoteAuction{
         return result;
     }
 
+    public List<String> RBrowseListings() throws RemoteException
+    {
+        List<String> result = new LinkedList<String>();
+        if(_reverseAuctionItems == null)
+        {
+            result.add("Something has gone wrong");
+            return result;
+        }
+        if(_reverseAuctionItems.size() == 0)
+        {
+            result.add("There are no items for sale");
+            return result;
+        }
+        for(int i = 1; i < RNextID; i++)
+        {
+            ReverseAuctionItem item = _reverseAuctionItems.get(i);
+            if(item != null)
+            {
+                String toAdd = "\n" +
+                "ID: " + item.getId() + "\n" +
+                "   Title: " + item.getTitle() + "\n" +
+                "   Description: " + item.getDescription() + "\n";
+                if(item.getLowestPrice() < 0)
+                {
+                    toAdd +=
+                    "   There are no active listings for this item";
+                }
+                else
+                {
+                    toAdd += 
+                    "   Current Lowest Price: " + ForwardAuctionItem.currencyToString(item.getLowestPrice());
+                }
+                result.add(toAdd);
+            }
+        }
+        return result;
+    }
+    public String RCreateListing()
+    {
+
+        return "";
+    }
     public static void main(String[] args) {
         try {
+            InputProcessor.clearConsole();
             // Setup the server
             Server s = new Server();
             // Setup the different interfaces

@@ -20,10 +20,18 @@ public class ReverseAuctionClient {
                 option = input.ReadNextInt();
             }
             switch (option) {
-                case 0:
+                case 0: // back
+                InputProcessor.clearConsole();
                     return;
-                case 1:
-                    
+                case 1: // browse listings
+                    try
+                    {
+                        System.out.println(server.RBrowseListings());
+                    }
+                    catch (Exception e) {
+                        System.err.println("Exception:");
+                        e.printStackTrace();
+                    }
                     break;
                 case 2:
                     

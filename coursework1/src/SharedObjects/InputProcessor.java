@@ -111,4 +111,8 @@ public class InputProcessor {
     {
         s.close();
     }
+    public static void clearConsole()
+    {
+        System.out.print("\033\143");
+    }
 }

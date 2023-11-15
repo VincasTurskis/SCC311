@@ -7,7 +7,7 @@ public class ReverseAuctionItem extends AuctionItem{
     {
         super(id, title, desc, seller);
     }
-    public boolean newBid(int price, Account bidder)
+    public boolean newBid(float price, Account bidder)
     {
         Bid b = new Bid(price, bidder);
         _bids.add(b);
@@ -18,5 +18,13 @@ public class ReverseAuctionItem extends AuctionItem{
             Collections.swap(_bids, index, index-1);
         }
         return true;
+    }
+    public float getLowestPrice()
+    {
+        if(_bids.size() <= 0)
+        {
+            return -1;
+        }
+        return _bids.get(0).bidPrice;
     }
 }

@@ -22,6 +22,7 @@ public class ForwardAuctionClient {
         //Switch case for different operations
         switch (option) {
             case 0: // Back
+                InputProcessor.clearConsole();
                 return;
             case 1: //Switch case for different operations
                 try

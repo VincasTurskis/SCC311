@@ -13,4 +13,5 @@ public interface IRemoteAuction extends Remote{
     public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException;
     public int FCreateAuction(String title, String description, float startingPrice, float reservePrice, Account seller) throws RemoteException;
     public String FCloseAuction(int auctionId, Account seller) throws RemoteException;
+    public List<String> RBrowseListings() throws RemoteException;
 }
