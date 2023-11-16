@@ -16,9 +16,14 @@ public class Server implements IRemoteAuction{
     private Hashtable<Integer, ForwardAuctionItem> _forwardAuctionItems;
 
     // Hash table for all items for the reverse auction
-    // The key is the item ID, the value is a list of all the listings in the category
+    // The key is the item name, the value is a list of all the listings in the category
 
     private Hashtable<String, ReverseAuctionItem> _reverseAuctionItems;
+
+    // Hash table for all items for the double auction
+    // The key is the item name, the value is a list of all buy and sell orders for the item.
+
+    private Hashtable<String, DoubleAuctionItem> _doubleAuctionItems;
 
 
     // A counter field for the number that will be used as the id for the next added listing
@@ -32,6 +37,7 @@ public class Server implements IRemoteAuction{
         //DNextID = 1;
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
         _reverseAuctionItems = new Hashtable<String, ReverseAuctionItem>();
+        _doubleAuctionItems = new Hashtable<String, DoubleAuctionItem>();
         accounts = new Hashtable<String, Account>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
@@ -165,7 +171,7 @@ public class Server implements IRemoteAuction{
         email = toClose.getHighestBidEmail();
         amount = toClose.getHighestBidAmount();
         // Return the details of the winner, and the closing price
-        result += "The winner is " + name + " (" + email + ") with an amount of " + ForwardAuctionItem.currencyToString(amount);
+        result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
         System.out.println(result);
         return result;
     }
@@ -198,8 +204,8 @@ public class Server implements IRemoteAuction{
                 "ID: " + item.getId() + "\n" +
                 "   Title: " + item.getTitle() + "\n" +
                 "   Description: " + item.getDescription() + "\n" +
-                "   Starting Price: " + ForwardAuctionItem.currencyToString(item.getStartingPrice()) + 
-                "   Current Price: " + ForwardAuctionItem.currencyToString(item.getHighestBidAmount());
+                "   Starting Price: " + AuctionItem.currencyToString(item.getStartingPrice()) + 
+                "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
                 result.add(toAdd);
             }
         }
@@ -274,7 +280,7 @@ public class Server implements IRemoteAuction{
                 else
                 {
                     toAdd += 
-                    "   Current Lowest Price: " + ForwardAuctionItem.currencyToString(item.getLowestBidPrice());
+                    "   Current Lowest Price: " + AuctionItem.currencyToString(item.getLowestBidPrice());
                 }
                 result.add(toAdd);
             }
@@ -354,6 +360,43 @@ public class Server implements IRemoteAuction{
         ReverseAuctionItem rai = _reverseAuctionItems.get(name);
         if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f) return false;
         return true;
+    }
+
+    public List<String> DBrowseListings() throws RemoteException
+    {
+        List<String> result = new LinkedList<String>();
+        if(_doubleAuctionItems == null)
+        {
+            result.add("Something has gone wrong");
+            return result;
+        }
+        if(_doubleAuctionItems.size() == 0)
+        {
+            result.add("There are no items for sale");
+            return result;
+        }
+        for(String s : _doubleAuctionItems.keySet())
+        {
+            DoubleAuctionItem item = _doubleAuctionItems.get(s);
+            if(item != null)
+            {
+                String toAdd = "\n" +
+                "Name: " + item.getTitle() + "\n" +
+                "   Description: " + item.getDescription() + "\n";
+                if(item.getLastSalePrice() < 0)
+                {
+                    toAdd +=
+                    "   No transactions have taken place for this item";
+                }
+                else
+                {
+                    toAdd +=
+                    "   Price of last sale: " + AuctionItem.currencyToString(item.getLastSalePrice());
+                }
+                result.add(toAdd);
+            }
+        }
+        return result;
     }
     public static void main(String[] args) {
         try {
