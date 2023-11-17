@@ -124,6 +124,18 @@ public class Server implements IRemoteAuction{
             return _messages.get(tAccount);
         }
     }
+
+    public boolean deleteMessages(Account account) throws RemoteException
+    {
+        Account tAccount = accountTranslation(account);
+        if(tAccount == null) return false;
+        synchronized(_messages)
+        {
+            if(_messages.get(tAccount) == null) return false;
+            _messages.put(tAccount, new LinkedList<String>());
+        }
+        return true;
+    }
     /*
      * Gets the specifics of an auction listing (Level 1)
      * @param itemId The ID of the listing

@@ -155,10 +155,11 @@ public class Client{
         System.out.println("Greetings, " + currentAccount.getName());
         System.out.println("\nSelect the type of auction to participate in:");
         System.out.println("0. Exit");
-        System.out.println("1. Forward Auction");
-        System.out.println("2. Reverse Auction");
-        System.out.println("3. Double Auction");
-        System.out.println("4: Log out");
+        System.out.println("1. View your messages");
+        System.out.println("2. Forward Auction");
+        System.out.println("3. Reverse Auction");
+        System.out.println("4. Double Auction");
+        System.out.println("5: Log out");
         // use the InputProcessor class to get the next int from terminal input
         int option = input.ReadNextInt();
         //check if input is correct
@@ -173,16 +174,19 @@ public class Client{
           case 0: // Exit
             input.close();
             return;
-          case 1: // forward auction
+          case 1:
+            MessageClient.run(currentAccount, input, server);
+            break;
+          case 2: // forward auction
             ForwardAuctionClient.run(currentAccount, input, server);
             break;
-          case 2: // reverse auction
+          case 3: // reverse auction
             ReverseAuctionClient.run(currentAccount, input, server);
             break;
-          case 3:
+          case 4: // double auction
             DoubleAuctionClient.run(currentAccount, input, server);
             break;
-          case 4:
+          case 5: // log out
             System.out.println("Logging out...");
             System.out.println("");
             currentAccount = null;

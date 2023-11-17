@@ -9,6 +9,7 @@ public interface IRemoteAuction extends Remote{
     public boolean createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException;
     public Account login(String email, String password) throws InvalidPasswordException, RemoteException;
     public List<String> getMessages(Account account) throws RemoteException;
+    public boolean deleteMessages(Account account) throws RemoteException;
     public ForwardAuctionItem getSpec (int itemId, int clientId) throws RemoteException;
     public List<String> FBrowseListings() throws RemoteException;
     public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException;
