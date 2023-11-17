@@ -473,7 +473,7 @@ public class Server implements IRemoteAuction{
             return result;
         }
         item.newSale(sellPrice, seller);
-        result = "Successfully placed sell order for" + itemName + " at " + AuctionItem.currencyToString(sellPrice);
+        result = "Successfully placed sell order for " + itemName + " at " + AuctionItem.currencyToString(sellPrice);
         Account matchSeller = DCheckForMatches(item, true);
         if(matchSeller != null && matchSeller.equals(seller))
         {
@@ -501,7 +501,7 @@ public class Server implements IRemoteAuction{
             return result;
         }
         item.newBid(buyPrice, buyer);
-        result = "Successfully placed buy order for" + itemName + " at " + AuctionItem.currencyToString(buyPrice);
+        result = "Successfully placed buy order for " + itemName + " at " + AuctionItem.currencyToString(buyPrice);
         Account matchBuyer = DCheckForMatches(item, false);
         if(matchBuyer != null && matchBuyer.equals(buyer))
         {
