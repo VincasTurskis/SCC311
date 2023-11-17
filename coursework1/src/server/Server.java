@@ -28,7 +28,8 @@ public class Server implements IRemoteAuction{
 
 
     // A counter field for the number that will be used as the id for the next added listing
-    private Hashtable<String, Account> accounts;
+    private Hashtable<String, Account> _accounts;
+    private Hashtable<Account, List<String>> _messages;
     private int FNextID;
 
     // Constructor
@@ -39,13 +40,14 @@ public class Server implements IRemoteAuction{
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
         _reverseAuctionItems = new Hashtable<String, ReverseAuctionItem>();
         _doubleAuctionItems = new Hashtable<String, DoubleAuctionItem>();
-        accounts = new Hashtable<String, Account>();
+        _accounts = new Hashtable<String, Account>();
+        _messages = new Hashtable<Account, List<String>>();
         try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Account exampleSeller = accounts.get("Example@seller.com");
+        Account exampleSeller = _accounts.get("Example@seller.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
             FCreateAuction("Cup", "A nice cup.", 0, 10, exampleSeller);
@@ -64,14 +66,15 @@ public class Server implements IRemoteAuction{
     {
         if(name == null || email == null || password == null) return false;
         Account a = new Account(name, email, password);
-        synchronized(accounts)
+        synchronized(_accounts)
         {
-            Account existing = accounts.get(email);
+            Account existing = _accounts.get(email);
             if(existing != null)
             {
                 return false;
             }
-            accounts.put(email, a);
+            _accounts.put(email, a);
+            _messages.put(a, new LinkedList<String>());
         }
         System.out.println("Server: Created account for " + email);
         return true;
@@ -79,23 +82,48 @@ public class Server implements IRemoteAuction{
 
     public Account login(String email, String password) throws InvalidPasswordException, RemoteException
     {
-        synchronized(accounts)
+        synchronized(_accounts)
         {
-            Account a = accounts.get(email);
+            Account a = _accounts.get(email);
             if(a == null) return null;
             if(!a.validatePassword(password)) return null;
             return a;
         }
     }
 
+    // Using an account received from client as a key in hashtable doesn't work
+    // This method takes the email from the argument account and fetches the correct account from the hash table
+    private Account accountTranslation(Account remote)
+    {
+        if(remote == null) return null;
+        synchronized(_accounts)
+        {
+            return _accounts.get(remote.getEmail());
+        }
+    }
+
     private boolean sendMessage(Account receiver, String message)
     {
+        Account tReceiver = accountTranslation(receiver);
+        if(tReceiver == null || message == null) return false;
+        synchronized(_messages)
+        {
+            if(_messages == null) return false;
+            List<String> msgList = _messages.get(tReceiver);
+            if(msgList == null) return false;
+            msgList.add(message);
+        }
         return true;
     }
 
     public List<String> getMessages(Account account) throws RemoteException
     {
-        return new ArrayList<String>();
+        Account tAccount = accountTranslation(account);
+        if(tAccount == null) return null;
+        synchronized(_messages)
+        {
+            return _messages.get(tAccount);
+        }
     }
     /*
      * Gets the specifics of an auction listing (Level 1)
