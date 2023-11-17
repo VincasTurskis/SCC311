@@ -64,22 +64,28 @@ public class Server implements IRemoteAuction{
     {
         if(name == null || email == null || password == null) return false;
         Account a = new Account(name, email, password);
-        Account existing = accounts.get(email);
-        if(existing != null)
+        synchronized(accounts)
         {
-            return false;
+            Account existing = accounts.get(email);
+            if(existing != null)
+            {
+                return false;
+            }
+            accounts.put(email, a);
         }
-        accounts.put(email, a);
         System.out.println("Server: Created account for " + email);
         return true;
     }
 
     public Account login(String email, String password) throws InvalidPasswordException, RemoteException
     {
-        Account a = accounts.get(email);
-        if(a == null) return null;
-        if(!a.validatePassword(password)) return null;
-        return a;
+        synchronized(accounts)
+        {
+            Account a = accounts.get(email);
+            if(a == null) return null;
+            if(!a.validatePassword(password)) return null;
+            return a;
+        }
     }
 
     private boolean sendMessage(Account receiver, String message)
@@ -99,7 +105,10 @@ public class Server implements IRemoteAuction{
      */
     public ForwardAuctionItem getSpec (int itemId, int clientId) throws RemoteException
     {
-        return _forwardAuctionItems.get(itemId);
+        synchronized(_forwardAuctionItems)
+        {
+            return _forwardAuctionItems.get(itemId);
+        }
     }
 
     /*
@@ -121,7 +130,10 @@ public class Server implements IRemoteAuction{
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
         ForwardAuctionItem newItem = new ForwardAuctionItem(FNextID, title, description, startingPrice, reservePrice, seller);
-        _forwardAuctionItems.put(FNextID, newItem);
+        synchronized(_forwardAuctionItems)
+        {
+            _forwardAuctionItems.put(FNextID, newItem);
+        }
         FNextID++;
         System.out.println("success");
         return newItem.getId();
@@ -137,51 +149,57 @@ public class Server implements IRemoteAuction{
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
-        // Check if the arguments are valid
-        if(_forwardAuctionItems == null)
+        if(requestSource == null)
         {
-            result = "Error: the listing database does not exist. Something went very wrong...";
+            result = "Error: Invalid arguments";
             System.out.println(result);
             return result;
         }
-        if(_forwardAuctionItems.get(auctionId) == null)
+        synchronized(_forwardAuctionItems)
         {
-            // If the item ID was not found, return that as a message
-            result = "Error: Item does not exist";
-            System.out.println(result);
-            return result;
+            // Check if the arguments are valid
+            if(_forwardAuctionItems == null)
+            {
+                result = "Error: the listing database does not exist. Something went very wrong...";
+                System.out.println(result);
+                return result;
+            }
+            ForwardAuctionItem toClose;
+            toClose = _forwardAuctionItems.get(auctionId);
+            if(toClose == null)
+            {
+                // If the item ID was not found, return that as a message
+                result = "Error: Item does not exist";
+            }
+            else if(!requestSource.equals(toClose.getSellerAccount()))
+            {
+                result = "Error: You do not have permission to close this listing.";
+            }
+            else
+            {
+                // If the arguments are valid, remove the listing regardless if the reserve price was met
+                _forwardAuctionItems.remove(auctionId);
+                result = "Auction for item ID:" + auctionId + " closed. ";
+                // Bloc containing different outcome possibilities
+                if(toClose.getHighestBidName() == "No bid") // No bidders
+                {
+                    result += "There were no bidders for this item";
+                }
+                else if(toClose.getHighestBidAmount() < toClose.getReservePrice()) // Highest price lower than reserve price
+                {
+                    result += "Reserve price was not reached";
+                }
+                else {//else, successful sale
+                    String name, email;
+                    float amount;
+                    name = toClose.getHighestBidName();
+                    email = toClose.getHighestBidEmail();
+                    amount = toClose.getHighestBidAmount();
+                    // Return the details of the winner, and the closing price
+                    result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
+                }
+            }
         }
-        if(!requestSource.equals(_forwardAuctionItems.get(auctionId).getSellerAccount()))
-        {
-            result = "Error: You do not have permission to close this listing.";
-            System.out.println(result);
-            return result;
-        }
-        // If the arguments are valid, remove the listing regardless if the reserve price was met
-        ForwardAuctionItem toClose = _forwardAuctionItems.get(auctionId);
-        _forwardAuctionItems.remove(auctionId);
-        result = "Auction for item ID:" + auctionId + " closed. ";
-        // Bloc containing different outcome possibilities
-        if(toClose.getHighestBidName() == "No bid") // No bidders
-        {
-            result += "There were no bidders for this item";
-            System.out.println(result);
-            return result;
-        }
-        if(toClose.getHighestBidAmount() < toClose.getReservePrice()) // Highest price lower than reserve price
-        {
-            result += "Reserve price was not reached";
-            System.out.println(result);
-            return result;
-        }
-        //else, successful sale
-        String name, email;
-        float amount;
-        name = toClose.getHighestBidName();
-        email = toClose.getHighestBidEmail();
-        amount = toClose.getHighestBidAmount();
-        // Return the details of the winner, and the closing price
-        result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
         System.out.println(result);
         return result;
     }
@@ -194,29 +212,33 @@ public class Server implements IRemoteAuction{
     {
         List<String> result = new LinkedList<String>();
         // null and empty checks for the list
-        if(_forwardAuctionItems == null)
+        synchronized(_forwardAuctionItems)
         {
-            result.add("Something has gone wrong");
-            return result;
-        }
-        if(_forwardAuctionItems.size() == 0)
-        {
-            result.add("There are no items for sale");
-            return result;
-        }
-        // For every item in the hash table, add a formatted string to the list of strings
-        for(int i = 1; i < FNextID; i++)
-        {
-            ForwardAuctionItem item = _forwardAuctionItems.get(i);
-            if(item != null)
+            if(_forwardAuctionItems == null)
             {
-                String toAdd = "\n" +
-                "ID: " + item.getId() + "\n" +
-                "   Title: " + item.getTitle() + "\n" +
-                "   Description: " + item.getDescription() + "\n" +
-                "   Starting Price: " + AuctionItem.currencyToString(item.getStartingPrice()) + 
-                "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
-                result.add(toAdd);
+                result.add("Something has gone wrong");
+            }
+            else if(_forwardAuctionItems.size() == 0)
+            {
+                result.add("There are no items for sale");
+            }
+            else
+            {
+                // For every item in the hash table, add a formatted string to the list of strings
+                for(int i = 1; i < FNextID; i++)
+                {
+                    ForwardAuctionItem item = _forwardAuctionItems.get(i);
+                    if(item != null)
+                    {
+                        String toAdd = "\n" +
+                        "ID: " + item.getId() + "\n" +
+                        "   Title: " + item.getTitle() + "\n" +
+                        "   Description: " + item.getDescription() + "\n" +
+                        "   Starting Price: " + AuctionItem.currencyToString(item.getStartingPrice()) + 
+                        "   Current Price: " + AuctionItem.currencyToString(item.getHighestBidAmount());
+                        result.add(toAdd);
+                    }
+                }
             }
         }
         // Return the list of strings
@@ -232,31 +254,38 @@ public class Server implements IRemoteAuction{
      */
     public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException
     {
-        // Get the item to be bid on from the hash table
-        ForwardAuctionItem toBid = _forwardAuctionItems.get(itemId);
+        if(bidder == null || newPrice < 0)
+        {
+            return "Error: invalid arguments";
+        }
         String result;
-        // If no item was found, output that
-        if(toBid == null)
+        synchronized(_forwardAuctionItems)
         {
-            result = "Error: no item for ID: " + itemId + " found";
-            return result;
-        }
-        // Prevent bids on own item
-        if(bidder.equals(toBid.getSellerAccount()))
-        {
-            result = "Error: cannot bid on an item you are selling";
-            return result;
-        }
-        boolean bidResult = toBid.newBid(newPrice, bidder);
-        // Prevent bids of a lower price than the current highest price
-        if(!bidResult)
-        {
-            result = "Error: suggested price is lower than current price";
-        }
-        // Output the result
-        else
-        {
-            result = "New bid placed on item ID: " + itemId + ". New price: " + newPrice;
+            // Get the item to be bid on from the hash table
+            ForwardAuctionItem toBid = _forwardAuctionItems.get(itemId);
+            // If no item was found, output that
+            if(toBid == null)
+            {
+                result = "Error: no item for ID: " + itemId + " found";
+                return result;
+            }
+            // Prevent bids on own item
+            if(bidder.equals(toBid.getSellerAccount()))
+            {
+                result = "Error: cannot bid on an item you are selling";
+                return result;
+            }
+            boolean bidResult = toBid.newBid(newPrice, bidder);
+            // Prevent bids of a lower price than the current highest price
+            if(!bidResult)
+            {
+                result = "Error: suggested price is lower than current price";
+            }
+            // Output the result
+            else
+            {
+                result = "New bid placed on item ID: " + itemId + ". New price: " + newPrice;
+            }
         }
         return result;
     }
@@ -264,35 +293,38 @@ public class Server implements IRemoteAuction{
     public List<String> RBrowseListings() throws RemoteException
     {
         List<String> result = new LinkedList<String>();
-        if(_reverseAuctionItems == null)
+        synchronized(_reverseAuctionItems)
         {
-            result.add("Something has gone wrong");
-            return result;
-        }
-        if(_reverseAuctionItems.size() == 0)
-        {
-            result.add("There are no items for sale");
-            return result;
-        }
-        for(String s : _reverseAuctionItems.keySet())
-        {
-            ReverseAuctionItem item = _reverseAuctionItems.get(s);
-            if(item != null)
+            if(_reverseAuctionItems == null)
             {
-                String toAdd = "\n" +
-                "Name: " + item.getTitle() + "\n" +
-                "   Description: " + item.getDescription() + "\n";
-                if(item.getLowestBidPrice() < 0)
+                result.add("Something has gone wrong");
+                return result;
+            }
+            if(_reverseAuctionItems.size() == 0)
+            {
+                result.add("There are no items for sale");
+                return result;
+            }
+            for(String s : _reverseAuctionItems.keySet())
+            {
+                ReverseAuctionItem item = _reverseAuctionItems.get(s);
+                if(item != null)
                 {
-                    toAdd +=
-                    "   There are no active listings for this item";
+                    String toAdd = "\n" +
+                    "Name: " + item.getTitle() + "\n" +
+                    "   Description: " + item.getDescription() + "\n";
+                    if(item.getLowestBidPrice() < 0)
+                    {
+                        toAdd +=
+                        "   There are no active listings for this item";
+                    }
+                    else
+                    {
+                        toAdd += 
+                        "   Current Lowest Price: " + AuctionItem.currencyToString(item.getLowestBidPrice());
+                    }
+                    result.add(toAdd);
                 }
-                else
-                {
-                    toAdd += 
-                    "   Current Lowest Price: " + AuctionItem.currencyToString(item.getLowestBidPrice());
-                }
-                result.add(toAdd);
             }
         }
         return result;
@@ -305,11 +337,14 @@ public class Server implements IRemoteAuction{
             result = "Invalid arguments";
             return result;
         }
-        if(_reverseAuctionItems.containsKey(name))
+        synchronized(_reverseAuctionItems)
         {
-            result = "Listing already exists";
+            if(_reverseAuctionItems.containsKey(name))
+            {
+                result = "Listing already exists";
+            }
+            _reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
         }
-        _reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
         result = "Created new listing for " + name;
         return result;
     }
@@ -321,31 +356,38 @@ public class Server implements IRemoteAuction{
             result = "Error: Invalid arguments";
             return result;
         }
-        ReverseAuctionItem item = _reverseAuctionItems.get(name);
-        if(item == null)
+        synchronized(_reverseAuctionItems)
         {
-            result = "Error: Listing does not exist";
-            return result;
+            ReverseAuctionItem item = _reverseAuctionItems.get(name);
+            if(item == null)
+            {
+                result = "Error: Listing does not exist";
+                return result;
+            }
+            item.newBid(price, seller);
         }
-        item.newBid(price, seller);
         result = "Successfully added new offer for " + name + " at " + AuctionItem.currencyToString(price);
         return result;
     }
     public String RBuyItem(String name, Account buyer) throws RemoteException
     {
         if(name == null || buyer == null) return "Error: Invalid arguments";
-        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-        if(rai == null) return "Error: No item \"" + name + "\" found";
-        if(buyer.equals(rai.getLowestBidder()))
+        float purchasePrice;
+        synchronized(_reverseAuctionItems)
         {
-            return "Error: You cannot buy an item you are selling";
+            ReverseAuctionItem rai = _reverseAuctionItems.get(name);
+            if(rai == null) return "Error: No item \"" + name + "\" found";
+            if(buyer.equals(rai.getLowestBidder()))
+            {
+                return "Error: You cannot buy an item you are selling";
+            }
+            if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+            {
+                return "No active listings for " + name + "have been found.";
+            }
+            purchasePrice = rai.getLowestBidPrice();
+            rai.buyLowest();
         }
-        if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
-        {
-            return "No active listings for " + name + "have been found.";
-        }
-        float purchasePrice = rai.getLowestBidPrice();
-        rai.buyLowest();
         String result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
         System.out.println("Server: " + buyer.getName() + " " + result);
         return result;
@@ -354,56 +396,66 @@ public class Server implements IRemoteAuction{
     {
         if(name == null) return "Error: Name cannot be null";
         ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-        if(rai == null) return "Error: No item \"" + name + "\" found";
-        if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+        String result;
+        synchronized(_reverseAuctionItems)
         {
-            return "No active listings for " + name + "have been found.";
+            if(rai == null) return "Error: No item \"" + name + "\" found";
+            if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+            {
+                return "No active listings for " + name + "have been found.";
+            }
+            result =
+            "   Description: " + rai.getDescription() + "\n" +
+            "   Lowest price: " + AuctionItem.currencyToString(rai.getLowestBidPrice());
         }
-        String result =
-        "   Description: " + rai.getDescription() + "\n" +
-        "   Lowest price: " + AuctionItem.currencyToString(rai.getLowestBidPrice());
         return result;
     }
     public boolean RExists(String name) throws RemoteException
     {
         if(name == null) return false;
-        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-        if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f) return false;
+        synchronized(_reverseAuctionItems)
+        {
+            ReverseAuctionItem rai = _reverseAuctionItems.get(name);
+            if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f) return false;
+        }
         return true;
     }
 
     public List<String> DBrowseListings() throws RemoteException
     {
         List<String> result = new LinkedList<String>();
-        if(_doubleAuctionItems == null)
+        synchronized(_doubleAuctionItems)
         {
-            result.add("Something has gone wrong");
-            return result;
-        }
-        if(_doubleAuctionItems.size() == 0)
-        {
-            result.add("There are no items for sale");
-            return result;
-        }
-        for(String s : _doubleAuctionItems.keySet())
-        {
-            DoubleAuctionItem item = _doubleAuctionItems.get(s);
-            if(item != null)
+            if(_doubleAuctionItems == null)
             {
-                String toAdd = "\n" +
-                "Name: " + item.getTitle() + "\n" +
-                "   Description: " + item.getDescription() + "\n";
-                if(item.getLastSalePrice() < 0)
+                result.add("Something has gone wrong");
+                return result;
+            }
+            if(_doubleAuctionItems.size() == 0)
+            {
+                result.add("There are no items for sale");
+                return result;
+            }
+            for(String s : _doubleAuctionItems.keySet())
+            {
+                DoubleAuctionItem item = _doubleAuctionItems.get(s);
+                if(item != null)
                 {
-                    toAdd +=
-                    "   No transactions have taken place for this item";
+                    String toAdd = "\n" +
+                    "Name: " + item.getTitle() + "\n" +
+                    "   Description: " + item.getDescription() + "\n";
+                    if(item.getLastSalePrice() < 0)
+                    {
+                        toAdd +=
+                        "   No transactions have taken place for this item";
+                    }
+                    else
+                    {
+                        toAdd +=
+                        "   Price of last sale: " + AuctionItem.currencyToString(item.getLastSalePrice());
+                    }
+                    result.add(toAdd);
                 }
-                else
-                {
-                    toAdd +=
-                    "   Price of last sale: " + AuctionItem.currencyToString(item.getLastSalePrice());
-                }
-                result.add(toAdd);
             }
         }
         return result;
@@ -418,6 +470,7 @@ public class Server implements IRemoteAuction{
      */
     private Account DCheckForMatches(DoubleAuctionItem item, boolean isNewOrderSeller)
     {
+        if(item == null) return null;
         Bid[] match = item.match();
         if(match[0] != null && match[1] != null)
         {
@@ -444,11 +497,14 @@ public class Server implements IRemoteAuction{
             result = "Invalid arguments";
             return result;
         }
-        if(_doubleAuctionItems.containsKey(name))
+        synchronized(_doubleAuctionItems)
         {
-            result = "Listing already exists";
+            if(_doubleAuctionItems.containsKey(name))
+            {
+                result = "Listing already exists";
+            }
+            _doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
         }
-        _doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
         result = "Created new listing for " + name;
         return result;
     }
@@ -461,23 +517,26 @@ public class Server implements IRemoteAuction{
             result = "Error: Invalid arguments";
             return result;
         }
-        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
-        if(item == null)
+        synchronized(_doubleAuctionItems)
         {
-            result = "Error: Listing does not exist";
-            return result;
-        }
-        if(item.isAccountOnOtherSide(seller, true))
-        {
-            result = "Error: Cannot sell item you are also buying";
-            return result;
-        }
-        item.newSale(sellPrice, seller);
-        result = "Successfully placed sell order for " + itemName + " at " + AuctionItem.currencyToString(sellPrice);
-        Account matchSeller = DCheckForMatches(item, true);
-        if(matchSeller != null && matchSeller.equals(seller))
-        {
-            result += "\nMatch found, sell order completed.";
+            DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+            if(item == null)
+            {
+                result = "Error: Listing does not exist";
+                return result;
+            }
+            if(item.isAccountOnOtherSide(seller, true))
+            {
+                result = "Error: Cannot sell item you are also buying";
+                return result;
+            }
+            item.newSale(sellPrice, seller);
+            result = "Successfully placed sell order for " + itemName + " at " + AuctionItem.currencyToString(sellPrice);
+            Account matchSeller = DCheckForMatches(item, true);
+            if(matchSeller != null && matchSeller.equals(seller))
+            {
+                result += "\nMatch found, sell order completed.";
+            }
         }
         return result;
     }
@@ -489,32 +548,39 @@ public class Server implements IRemoteAuction{
             result = "Error: Invalid arguments";
             return result;
         }
-        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
-        if(item == null)
+        synchronized(_doubleAuctionItems)
         {
-            result = "Error: Listing does not exist";
-            return result;
-        }
-        if(item.isAccountOnOtherSide(buyer, false))
-        {
-            result = "Error: Cannot buy item you are also selling";
-            return result;
-        }
-        item.newBid(buyPrice, buyer);
-        result = "Successfully placed buy order for " + itemName + " at " + AuctionItem.currencyToString(buyPrice);
-        Account matchBuyer = DCheckForMatches(item, false);
-        if(matchBuyer != null && matchBuyer.equals(buyer))
-        {
-            result += "\nMatch found, buy order completed.";
+            DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+            if(item == null)
+            {
+                result = "Error: Listing does not exist";
+                return result;
+            }
+            if(item.isAccountOnOtherSide(buyer, false))
+            {
+                result = "Error: Cannot buy item you are also selling";
+                return result;
+            }
+            item.newBid(buyPrice, buyer);
+            result = "Successfully placed buy order for " + itemName + " at " + AuctionItem.currencyToString(buyPrice);
+            Account matchBuyer = DCheckForMatches(item, false);
+            if(matchBuyer != null && matchBuyer.equals(buyer))
+            {
+                result += "\nMatch found, buy order completed.";
+            }
         }
         return result;
     }
     public String DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
     {
         if(itemName == null || account == null) return "Error: invalid arguments";
-        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
-        if(item == null) return "Error: Listing does not exist";
-        boolean result = item.removeOrders(account, removeAll);
+        boolean result;
+        synchronized(_doubleAuctionItems)
+        {
+            DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+            if(item == null) return "Error: Listing does not exist";
+            result = item.removeOrders(account, removeAll);
+        }
         if(result == false)
         {
             return "No orders for user " + account.getName() + " were found";
