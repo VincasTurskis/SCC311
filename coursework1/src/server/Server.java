@@ -509,6 +509,22 @@ public class Server implements IRemoteAuction{
         }
         return result;
     }
+    public String DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
+    {
+        if(itemName == null || account == null) return "Error: invalid arguments";
+        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+        if(item == null) return "Error: Listing does not exist";
+        boolean result = item.removeOrders(account, removeAll);
+        if(result == false)
+        {
+            return "No orders for user " + account.getName() + " were found";
+        }
+        if(removeAll)
+        {
+            return "All orders removed.";
+        }
+        return "Order removed.";
+    }
 
     public static void main(String[] args) {
         try {

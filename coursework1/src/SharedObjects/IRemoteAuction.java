@@ -24,4 +24,5 @@ public interface IRemoteAuction extends Remote{
     public String DCreateListing(String name, String description) throws RemoteException;
     public String DPlaceSellOrder(String itemName, float sellPrice, Account seller) throws RemoteException;
     public String DPlaceBuyOrder(String itemName, float buyPrice, Account buyer) throws RemoteException;
+    public String DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException;
 }

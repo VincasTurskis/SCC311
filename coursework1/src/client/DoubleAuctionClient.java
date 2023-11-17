@@ -165,6 +165,58 @@ public class DoubleAuctionClient {
                         return;
                     }
                     break;
+                case 4:
+                    System.out.println("Removing order...");
+                    System.out.println("Input name of item: ");
+                    itemName = input.ReadNextLine();
+                    if(itemName == "")
+                    {
+                        System.out.println("Error: Name cannot be empty");
+                        continue;
+                    }
+                    System.out.println("Remove all your orders for this item? (Y/N)");
+                    System.out.println("If \"N\" is selected, only the highest priced buy order/lowest priced sell order will be removed:");
+                    String YN = input.ReadNextLine();
+                    boolean all = false;
+                    switch (YN) {
+                        case "y":
+                        case "Y":
+                            all = true;
+                            break;
+                        case "n":
+                        case "N":
+                            all = false;
+                            break;
+                        default:
+                            System.out.println("Option not recognized. Aborting...");
+                            continue;
+                    }
+                    if(all)
+                    {
+                        System.out.println("Are you sure you want to remove all your orders for " + itemName + "? (Y/N)");
+                    }
+                    else
+                    {
+                        System.out.println("Are you sure you want to remove one of your orders for " + itemName + "? (Y/N)");   
+                    }
+                    String YN2 = input.ReadNextLine();
+                    switch (YN2) {
+                        case "y":
+                        case "Y":
+                            try {
+                                System.out.println(server.DRemoveOrder(itemName, currentAccount, all));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        case "n":
+                        case "N":
+                            System.out.println("Aborting...");
+                            continue;
+                        default:
+                            System.out.println("Option not recognized. Aborting...");
+                            continue;
+                    }
                 default:
                     break;
             }

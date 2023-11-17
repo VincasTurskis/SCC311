@@ -110,4 +110,33 @@ public class DoubleAuctionItem extends AuctionItem{
         _lastSalePrice = sell.bidPrice;
         return result;
     }
+
+    public boolean removeOrders(Account owner, boolean all)
+    {
+        if(owner == null) return false;
+        boolean found = false;
+        for(int i = 0; i < _bids.size(); i++)
+        {
+            Bid b = _bids.get(i);
+            if(b.bidder.equals(owner))
+            {
+                found = true;
+                _bids.remove(b);
+                i--;
+                if(!all) return found;
+            }
+        }
+        for(int i = 0; i < _sales.size(); i++)
+        {
+            Bid b = _sales.get(i);
+            if(b.bidder.equals(owner))
+            {
+                found = true;
+                _sales.remove(b);
+                i--;
+                if(!all) return found;
+            }
+        }
+        return found;
+    }
 }
