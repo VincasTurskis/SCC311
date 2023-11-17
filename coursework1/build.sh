@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir -p bin
 cp -r ./src/* ./bin
 cd bin
 javac $(find ./* | grep .java)
