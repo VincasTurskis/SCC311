@@ -181,6 +181,7 @@ public class Client{
             ReverseAuctionClient.run(currentAccount, input, server);
             break;
           case 3:
+            DoubleAuctionClient.run(currentAccount, input, server);
             break;
           case 4:
             System.out.println("Logging out...");

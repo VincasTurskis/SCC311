@@ -4,6 +4,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -81,6 +82,15 @@ public class Server implements IRemoteAuction{
         return a;
     }
 
+    private boolean sendMessage(Account receiver, String message)
+    {
+        return true;
+    }
+
+    public List<String> getMessages(Account account) throws RemoteException
+    {
+        return new ArrayList<String>();
+    }
     /*
      * Gets the specifics of an auction listing (Level 1)
      * @param itemId The ID of the listing
@@ -308,13 +318,13 @@ public class Server implements IRemoteAuction{
         String result = "";
         if(name == null || price < 0 || seller == null)
         {
-            result = "Invalid arguments";
+            result = "Error: Invalid arguments";
             return result;
         }
         ReverseAuctionItem item = _reverseAuctionItems.get(name);
         if(item == null)
         {
-            result = "Listing does not exist";
+            result = "Error: Listing does not exist";
             return result;
         }
         item.newBid(price, seller);
@@ -323,7 +333,7 @@ public class Server implements IRemoteAuction{
     }
     public String RBuyItem(String name, Account buyer) throws RemoteException
     {
-        if(name == null) return "Error: Invalid arguments";
+        if(name == null || buyer == null) return "Error: Invalid arguments";
         ReverseAuctionItem rai = _reverseAuctionItems.get(name);
         if(rai == null) return "Error: No item \"" + name + "\" found";
         if(buyer.equals(rai.getLowestBidder()))
@@ -397,7 +407,109 @@ public class Server implements IRemoteAuction{
             }
         }
         return result;
+
     }
+
+    /*
+     * A function to check for double auction matches. Should be called after a new order (buy or sell) is placed
+     * @param item the item category being checked
+     * @param isNewOrderSeller true if the newest order was a sell order.
+     * @return null if no matches found, the seller if isNewOrderSeller = true, the buyer if isNewOrderSeller = false
+     */
+    private Account DCheckForMatches(DoubleAuctionItem item, boolean isNewOrderSeller)
+    {
+        Bid[] match = item.match();
+        if(match[0] != null && match[1] != null)
+        {
+            sendMessage(match[0].bidder,
+            "Your sell order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[0].bidPrice) + "has been completed."
+            );
+            sendMessage(match[1].bidder,
+            "Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + "has been completed."
+            );
+            if(isNewOrderSeller)
+            {
+                return match[0].bidder;
+            }
+            else return match[1].bidder;
+        }
+        else return null;
+    }
+
+    public String DCreateListing(String name, String description) throws RemoteException
+    {
+        String result = "";
+        if(name == null || description == null)
+        {
+            result = "Invalid arguments";
+            return result;
+        }
+        if(_doubleAuctionItems.containsKey(name))
+        {
+            result = "Listing already exists";
+        }
+        _doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
+        result = "Created new listing for " + name;
+        return result;
+    }
+
+    public String DPlaceSellOrder(String itemName, float sellPrice, Account seller) throws RemoteException
+    {
+        String result = "";
+        if(itemName == null || sellPrice < 0 || seller == null)
+        {
+            result = "Error: Invalid arguments";
+            return result;
+        }
+        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+        if(item == null)
+        {
+            result = "Error: Listing does not exist";
+            return result;
+        }
+        if(item.isAccountOnOtherSide(seller, true))
+        {
+            result = "Error: Cannot sell item you are also buying";
+            return result;
+        }
+        item.newSale(sellPrice, seller);
+        result = "Successfully placed sell order for" + itemName + " at " + AuctionItem.currencyToString(sellPrice);
+        Account matchSeller = DCheckForMatches(item, true);
+        if(matchSeller != null && matchSeller.equals(seller))
+        {
+            result += "\nMatch found, sell order completed.";
+        }
+        return result;
+    }
+    public String DPlaceBuyOrder(String itemName, float buyPrice, Account buyer) throws RemoteException
+    {
+        String result = "";
+        if(itemName == null || buyPrice < 0 || buyer == null)
+        {
+            result = "Error: Invalid arguments";
+            return result;
+        }
+        DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
+        if(item == null)
+        {
+            result = "Error: Listing does not exist";
+            return result;
+        }
+        if(item.isAccountOnOtherSide(buyer, false))
+        {
+            result = "Error: Cannot buy item you are also selling";
+            return result;
+        }
+        item.newBid(buyPrice, buyer);
+        result = "Successfully placed buy order for" + itemName + " at " + AuctionItem.currencyToString(buyPrice);
+        Account matchBuyer = DCheckForMatches(item, false);
+        if(matchBuyer != null && matchBuyer.equals(buyer))
+        {
+            result += "\nMatch found, buy order completed.";
+        }
+        return result;
+    }
+
     public static void main(String[] args) {
         try {
             InputProcessor.clearConsole();

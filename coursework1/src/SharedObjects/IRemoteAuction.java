@@ -8,6 +8,7 @@ import java.util.List;
 public interface IRemoteAuction extends Remote{
     public boolean createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException;
     public Account login(String email, String password) throws InvalidPasswordException, RemoteException;
+    public List<String> getMessages(Account account) throws RemoteException;
     public ForwardAuctionItem getSpec (int itemId, int clientId) throws RemoteException;
     public List<String> FBrowseListings() throws RemoteException;
     public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException;
@@ -19,4 +20,8 @@ public interface IRemoteAuction extends Remote{
     public String RBuyItem(String name, Account buyer) throws RemoteException;
     public String RGetSpec(String name) throws RemoteException;
     public boolean RExists(String name) throws RemoteException;
+    public List<String> DBrowseListings() throws RemoteException;
+    public String DCreateListing(String name, String description) throws RemoteException;
+    public String DPlaceSellOrder(String itemName, float sellPrice, Account seller) throws RemoteException;
+    public String DPlaceBuyOrder(String itemName, float buyPrice, Account buyer) throws RemoteException;
 }

@@ -74,4 +74,40 @@ public class DoubleAuctionItem extends AuctionItem{
     {
         return _lastSalePrice;
     }
+    public boolean isAccountOnOtherSide(Account toCheck, boolean isSeller)
+    {
+        if(isSeller)
+        {
+            for(Bid b : _bids)
+            {
+                if(b.bidder.equals(toCheck)) return true;
+            }
+            return false;
+        }
+        else
+        {
+            for(Bid b : _sales)
+            {
+                if(b.bidder.equals(toCheck)) return true;
+            }
+            return false;
+        }
+    }
+    // A function that checks for matches between buyers and sellers
+    // Supposed to be called after a new order (buy or sell) is created
+    // returns an array of 2 bids - [0] is the seller's bid, [1] is the buyer's
+    public Bid[] match()
+    {
+        Bid[] result = new Bid[2];
+        result[0] = null; result[1] = null;
+        float lowestSale = getLowestSellPrice(), highestBuy = getHighestBuyPrice();
+        if(lowestSale < 0 || highestBuy < 0) return result;
+        if(lowestSale > highestBuy) return result;
+
+        Bid buy = _bids.remove(0), sell = _sales.remove(0);
+        result[0] = sell;
+        result[1] = buy;
+        _lastSalePrice = sell.bidPrice;
+        return result;
+    }
 }

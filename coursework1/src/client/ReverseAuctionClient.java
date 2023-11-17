@@ -49,7 +49,7 @@ public class ReverseAuctionClient {
                     try
                     {
                         result = server.RAddEntryToListing(itemName, price, currentAccount);
-                        if(result.equals("Listing does not exist"))
+                        if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no other listings for this item.");
                             System.out.println("Create a new listing? (Y/N)");
@@ -88,7 +88,7 @@ public class ReverseAuctionClient {
                         }
                         else
                         {
-                            System.out.println("Error: " + result);
+                            System.out.println(result);
                             continue;
                         }
                     } catch(Exception e)

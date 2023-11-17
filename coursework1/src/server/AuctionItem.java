@@ -40,17 +40,4 @@ public class AuctionItem implements Serializable {
         String result = String.format("%.02f", amount);
         return result;
     }
-    /*
-     * A helper class to represent a single bid on this item
-     */
-    protected class Bid
-    {
-        public float bidPrice;
-        public Account bidder;
-        public Bid(float price, Account bidderAccount)
-        {
-            bidder = bidderAccount;
-            bidPrice = price;
-        }
-    }
 }
