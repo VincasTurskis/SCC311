@@ -4,7 +4,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class Server implements IRemoteAuction{
         }
     }
 
-    // Using an account received from client as a key in hashtable doesn't work
+    // Using an account received from client as a key in a hashtable doesn't work
     // This method takes the email from the argument account and fetches the correct account from the hash table
     private Account accountTranslation(Account remote)
     {
@@ -503,10 +502,10 @@ public class Server implements IRemoteAuction{
         if(match[0] != null && match[1] != null)
         {
             sendMessage(match[0].bidder,
-            "Your sell order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[0].bidPrice) + "has been completed."
+            "Your sell order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[0].bidPrice) + " has been completed."
             );
             sendMessage(match[1].bidder,
-            "Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + "has been completed."
+            "Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + " has been completed."
             );
             if(isNewOrderSeller)
             {

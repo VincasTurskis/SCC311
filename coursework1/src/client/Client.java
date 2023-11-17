@@ -153,7 +153,6 @@ public class Client{
       while(sessionLoop)
       {
         System.out.println("Greetings, " + currentAccount.getName());
-        System.out.println("");
         System.out.println("\nSelect the type of auction to participate in:");
         System.out.println("0. Exit");
         System.out.println("1. Forward Auction");
