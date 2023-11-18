@@ -236,6 +236,8 @@ public class Server implements IRemoteAuction{
                     amount = toClose.getHighestBidAmount();
                     // Return the details of the winner, and the closing price
                     result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
+                    sendMessage(toClose.getSellerAccount(), "Forward Auction: " + result);
+                    sendMessage(toClose.getHighestBidder(), "Forward Auction: You have won the auction for " + toClose.getTitle() + " (ID: " + toClose.getId() + ") with a bid of " + AuctionItem.currencyToString(amount));
                 }
             }
         }
@@ -426,6 +428,8 @@ public class Server implements IRemoteAuction{
             }
             purchasePrice = rai.getLowestBidPrice();
             rai.buyLowest();
+            sendMessage(rai.getLowestBidder(), "Reverse Auction: Your listing for " + name + " has been sold for " + AuctionItem.currencyToString(purchasePrice));
+            sendMessage(buyer, "Reverse Auction: You have purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice));
         }
         String result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
         System.out.println("Server: " + buyer.getName() + " " + result);
@@ -514,10 +518,10 @@ public class Server implements IRemoteAuction{
         if(match[0] != null && match[1] != null)
         {
             sendMessage(match[0].bidder,
-            "Your sell order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[0].bidPrice) + " has been completed."
+            "Double Auction: Your sell order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[0].bidPrice) + " has been completed."
             );
             sendMessage(match[1].bidder,
-            "Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + " has been completed."
+            "Double Auction: Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + " has been completed."
             );
             if(isNewOrderSeller)
             {
