@@ -1,6 +1,4 @@
 import java.util.Scanner;
-import java.util.InputMismatchException;
-
 /*
  * A utility class for reading and validating user input from the console
  */
@@ -50,18 +48,17 @@ public class InputProcessor {
         {
             try
             {
-                result = s.nextInt();
+                String input = s.nextLine();
+                result = Integer.parseInt(input);
                 if(result < 0)
                 {
                     System.out.println("Input error: input a positive integer: ");
                 }
                 else return result;
             }
-            catch(InputMismatchException e)
+            catch(NumberFormatException e)
             {
                 System.out.println("Input error: input a valid integer: ");
-                //Discard the input that was just provided (as it's invalid)
-                s.nextLine();
             }
             catch(Exception e)
             {
@@ -83,18 +80,18 @@ public class InputProcessor {
         {
             try
             {
-                result = s.nextFloat();
+                String input = s.nextLine();
+                result = Float.parseFloat(input);
                 if(result < 0)
                 {
                     System.out.println("Input error: input a positive number: ");
                 }
                 else return result;
             }
-            catch(InputMismatchException e)
+            catch(NumberFormatException e)
             {
                 System.out.println("Input error: input a valid number: ");
                 //Discard the input that was just provided (as it's invalid)
-                s.nextLine();
             }
             catch(Exception e)
             {

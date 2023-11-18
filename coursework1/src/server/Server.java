@@ -316,6 +316,7 @@ public class Server implements IRemoteAuction{
                 result = "Error: cannot bid on an item you are selling";
                 return result;
             }
+            Account oldHighestBidder = toBid.getHighestBidder();
             boolean bidResult = toBid.newBid(newPrice, bidder);
             // Prevent bids of a lower price than the current highest price
             if(!bidResult)
@@ -325,6 +326,7 @@ public class Server implements IRemoteAuction{
             // Output the result
             else
             {
+                sendMessage(oldHighestBidder, "Forward auction: You have been outbid on " + toBid.getTitle() +". New highest bid - " +AuctionItem.currencyToString(toBid.getHighestBidAmount()));
                 result = "New bid placed on item ID: " + itemId + ". New price: " + newPrice;
             }
         }
