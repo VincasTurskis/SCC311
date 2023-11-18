@@ -163,9 +163,9 @@ public class Client{
         // use the InputProcessor class to get the next int from terminal input
         int option = input.ReadNextInt();
         //check if input is correct
-        while(option < 0 || option > 4)
+        while(option < 0 || option > 5)
         {
-            System.out.println("Error: input a number 0-4");
+            System.out.println("Error: input a number 0-5");
             option = input.ReadNextInt();
         }
         InputProcessor.clearConsole();
