@@ -1,5 +1,4 @@
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -32,7 +31,7 @@ public class Server implements IRemoteAuction{
 
     // A counter field for the number that will be used as the id for the next added listing
     private Hashtable<String, Account> _accounts;
-    private Hashtable<Account, List<String>> _messages;
+    private Hashtable<Account, LinkedList<String>> _messages;
     private int FNextID;
 
     private PrivateKey _privateKey;
@@ -41,16 +40,15 @@ public class Server implements IRemoteAuction{
     public Server() {
         super();
         FNextID = 1;
-        //DNextID = 1;
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
         _reverseAuctionItems = new Hashtable<String, ReverseAuctionItem>();
         _doubleAuctionItems = new Hashtable<String, DoubleAuctionItem>();
         _accounts = new Hashtable<String, Account>();
-        _messages = new Hashtable<Account, List<String>>();
+        _messages = new Hashtable<Account, LinkedList<String>>();
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream("auction_keystore.jks"), "changeit".toCharArray());
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey("senderKeyPair", "changeit".toCharArray());
+            keyStore.load(new FileInputStream("sender_keystore.jks"), "auctionPassword".toCharArray());
+            _privateKey = (PrivateKey) keyStore.getKey("senderKeyPair", "auctionPassword".toCharArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -74,32 +72,32 @@ public class Server implements IRemoteAuction{
 
     }
 
-    public boolean createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException
+    public SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException
     {
-        if(name == null || email == null || password == null) return false;
+        if(name == null || email == null || password == null) return new SignedMessage<Boolean>(false, _privateKey);
         Account a = new Account(name, email, password);
         synchronized(_accounts)
         {
             Account existing = _accounts.get(email);
             if(existing != null)
             {
-                return false;
+                return new SignedMessage<Boolean>(false, _privateKey);
             }
             _accounts.put(email, a);
             _messages.put(a, new LinkedList<String>());
         }
         System.out.println("Server: Created account for " + email);
-        return true;
+        return new SignedMessage<Boolean>(true, _privateKey);
     }
 
-    public Account login(String email, String password) throws InvalidPasswordException, RemoteException
+    public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException
     {
         synchronized(_accounts)
         {
             Account a = _accounts.get(email);
             if(a == null) return null;
             if(!a.validatePassword(password)) return null;
-            return a;
+            return new SignedMessage<Account>(a, _privateKey);
         }
     }
 
@@ -128,26 +126,26 @@ public class Server implements IRemoteAuction{
         return true;
     }
 
-    public List<String> getMessages(Account account) throws RemoteException
+    public SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException
     {
         Account tAccount = accountTranslation(account);
         if(tAccount == null) return null;
         synchronized(_messages)
         {
-            return _messages.get(tAccount);
+            return new SignedMessage<LinkedList<String>>(_messages.get(tAccount), _privateKey);
         }
     }
 
-    public boolean deleteMessages(Account account) throws RemoteException
+    public SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException
     {
         Account tAccount = accountTranslation(account);
-        if(tAccount == null) return false;
+        if(tAccount == null) return new SignedMessage<Boolean>(false, _privateKey);
         synchronized(_messages)
         {
-            if(_messages.get(tAccount) == null) return false;
+            if(_messages.get(tAccount) == null) return new SignedMessage<Boolean>(false, _privateKey);
             _messages.put(tAccount, new LinkedList<String>());
         }
-        return true;
+        return new SignedMessage<Boolean>(true, _privateKey);
     }
     /*
      * Creates a new auction listing with the provided parameters. Used by the seller client (level 2)
@@ -157,14 +155,14 @@ public class Server implements IRemoteAuction{
      * @param reservePrice The reserve price of the item - if the listing is closed and the highest bid is below the reserve price, the item will not be sold
      * @return the ID of the new listing. -1 If the arguments were invalid.
      */
-    public int FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException
+    public SignedMessage<Integer> FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
         if(title == null || description == null || startingPrice < 0 || reservePrice < 0)
         {
             System.out.println("error, bad arguments");
-            return -1;
+            return new SignedMessage<Integer>(-1, _privateKey);
         }
         // Create a new AuctionItem object (using the nextId counter for the ID) and put it in the hash table
         ForwardAuctionItem newItem = new ForwardAuctionItem(FNextID, title, description, startingPrice, reservePrice, seller);
@@ -174,7 +172,7 @@ public class Server implements IRemoteAuction{
         }
         FNextID++;
         System.out.println("success");
-        return newItem.getId();
+        return new SignedMessage<Integer>(newItem.getId(), _privateKey);
     }
 
     /*
@@ -183,7 +181,7 @@ public class Server implements IRemoteAuction{
      * @param requestSource the account that's making the request to close.
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String FCloseAuction(int auctionId, Account requestSource) throws RemoteException
+    public SignedMessage<String> FCloseAuction(int auctionId, Account requestSource) throws RemoteException
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
@@ -191,7 +189,7 @@ public class Server implements IRemoteAuction{
         {
             result = "Error: Invalid arguments";
             System.out.println(result);
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_forwardAuctionItems)
         {
@@ -200,7 +198,7 @@ public class Server implements IRemoteAuction{
             {
                 result = "Error: the listing database does not exist. Something went very wrong...";
                 System.out.println(result);
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             ForwardAuctionItem toClose;
             toClose = _forwardAuctionItems.get(auctionId);
@@ -241,16 +239,16 @@ public class Server implements IRemoteAuction{
             }
         }
         System.out.println(result);
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
 
     /*
      * Gets the list of all active auction listings, intended to use by the buyer client (level 2) 
      * @return a list of strings; each member is a string containing the title, description and current price in a printable format
      */
-    public List<String> FBrowseListings() throws RemoteException
+    public SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException
     {
-        List<String> result = new LinkedList<String>();
+        LinkedList<String> result = new LinkedList<String>();
         // null and empty checks for the list
         synchronized(_forwardAuctionItems)
         {
@@ -282,7 +280,7 @@ public class Server implements IRemoteAuction{
             }
         }
         // Return the list of strings
-        return result;
+        return new SignedMessage<LinkedList<String>>(result, _privateKey);
     }
     /*
      * Places a bid on one of the auction listings. Intended to be used by the buyer client (Level 2)
@@ -292,11 +290,11 @@ public class Server implements IRemoteAuction{
      * @param email The email address of the bidder - second piece of identifying information
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException
+    public SignedMessage<String> FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException
     {
         if(bidder == null || newPrice < 0)
         {
-            return "Error: invalid arguments";
+            return new SignedMessage<String>("Error: invalid arguments", _privateKey);
         }
         String result;
         synchronized(_forwardAuctionItems)
@@ -307,13 +305,13 @@ public class Server implements IRemoteAuction{
             if(toBid == null)
             {
                 result = "Error: no item for ID: " + itemId + " found";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             // Prevent bids on own item
             if(bidder.equals(toBid.getSellerAccount()))
             {
                 result = "Error: cannot bid on an item you are selling";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             Account oldHighestBidder = toBid.getHighestBidder();
             boolean bidResult = toBid.newBid(newPrice, bidder);
@@ -329,23 +327,23 @@ public class Server implements IRemoteAuction{
                 result = "New bid placed on item ID: " + itemId + ". New price: " + AuctionItem.currencyToString(newPrice);
             }
         }
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
 
-    public List<String> RBrowseListings() throws RemoteException
+    public SignedMessage<LinkedList<String>> RBrowseListings() throws RemoteException
     {
-        List<String> result = new LinkedList<String>();
+        LinkedList<String> result = new LinkedList<String>();
         synchronized(_reverseAuctionItems)
         {
             if(_reverseAuctionItems == null)
             {
                 result.add("Something has gone wrong");
-                return result;
+                return new SignedMessage<LinkedList<String>>(result, _privateKey);
             }
             if(_reverseAuctionItems.size() == 0)
             {
                 result.add("There are no items for sale");
-                return result;
+                return new SignedMessage<LinkedList<String>>(result, _privateKey);
             }
             for(String s : _reverseAuctionItems.keySet())
             {
@@ -369,15 +367,15 @@ public class Server implements IRemoteAuction{
                 }
             }
         }
-        return result;
+        return new SignedMessage<LinkedList<String>>(result, _privateKey);
     }
-    public String RCreateListing(String name, String description) throws RemoteException
+    public SignedMessage<String> RCreateListing(String name, String description) throws RemoteException
     {
         String result = "";
         if(name == null || description == null)
         {
             result = "Invalid arguments";
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_reverseAuctionItems)
         {
@@ -388,15 +386,15 @@ public class Server implements IRemoteAuction{
             _reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
         }
         result = "Created new listing for " + name;
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public String RAddEntryToListing(String name, int price, Account seller) throws RemoteException
+    public SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException
     {
         String result = "";
         if(name == null || price < 0 || seller == null)
         {
             result = "Error: Invalid arguments";
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_reverseAuctionItems)
         {
@@ -404,81 +402,101 @@ public class Server implements IRemoteAuction{
             if(item == null)
             {
                 result = "Error: Listing does not exist";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             item.newBid(price, seller);
         }
         result = "Successfully added new offer for " + name + " at " + AuctionItem.currencyToString(price);
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public String RBuyItem(String name, Account buyer) throws RemoteException
+    public SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException
     {
-        if(name == null || buyer == null) return "Error: Invalid arguments";
+        String result = "";
+        if(name == null || buyer == null) 
+        {
+            result = "Error: Invalid arguments";
+            return new SignedMessage<String>(result, _privateKey);
+        }
         int purchasePrice;
         synchronized(_reverseAuctionItems)
         {
             ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-            if(rai == null) return "Error: No item \"" + name + "\" found";
+            if(rai == null) 
+            {
+                result = "Error: No item \"" + name + "\" found";
+                return new SignedMessage<String>(result, _privateKey);
+            }
             if(buyer.equals(rai.getLowestBidder()))
             {
-                return "Error: You cannot buy an item you are selling";
+                result = "Error: You cannot buy an item you are selling";
+                return new SignedMessage<String>(result, _privateKey);
             }
             if(Math.abs(rai.getLowestBidPrice() + 1) == -1)
             {
-                return "No active listings for " + name + "have been found.";
+                result = "No active listings for " + name + "have been found.";
+                return new SignedMessage<String>(result, _privateKey);
             }
             purchasePrice = rai.getLowestBidPrice();
             sendMessage(rai.getLowestBidder(), "Reverse Auction: Your listing for " + name + " has been sold for " + AuctionItem.currencyToString(purchasePrice));
             rai.buyLowest();
             sendMessage(buyer, "Reverse Auction: You have purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice));
         }
-        String result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
+        result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
         System.out.println("Server: " + buyer.getName() + " " + result);
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public String RGetSpec(String name) throws RemoteException
+    public SignedMessage<String> RGetSpec(String name) throws RemoteException
     {
-        if(name == null) return "Error: Name cannot be null";
-        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
         String result;
+        if(name == null) 
+        {
+            result = "Error: Name cannot be null";
+            return new SignedMessage<String>(result, _privateKey);
+        }
+        ReverseAuctionItem rai = _reverseAuctionItems.get(name);
         synchronized(_reverseAuctionItems)
         {
-            if(rai == null) return "Error: No item \"" + name + "\" found";
+            if(rai == null) 
+            {
+                result = "Error: No item \"" + name + "\" found";
+                return new SignedMessage<String>(result, _privateKey);
+            }
             if(Math.abs(rai.getLowestBidPrice() + 1) == -1)
             {
-                return "No active listings for " + name + "have been found.";
+                result = "No active listings for " + name + "have been found.";
+                return new SignedMessage<String>(result, _privateKey);
             }
             result =
             "   Description: " + rai.getDescription() + "\n" +
             "   Lowest price: " + AuctionItem.currencyToString(rai.getLowestBidPrice());
         }
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public boolean RExists(String name) throws RemoteException
+    public SignedMessage<Boolean> RExists(String name) throws RemoteException
     {
-        if(name == null) return false;
+        if(name == null) return new SignedMessage<Boolean>(false, _privateKey);
         synchronized(_reverseAuctionItems)
         {
             ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-            if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) == -1) return false;
+            if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) == -1) return new SignedMessage<Boolean>(false, _privateKey);
         }
-        return true;
+        return new SignedMessage<Boolean>(true, _privateKey);
     }
 
-    public List<String> DBrowseListings() throws RemoteException
+    public SignedMessage<LinkedList<String>> DBrowseListings() throws RemoteException
     {
-        List<String> result = new LinkedList<String>();
+        LinkedList<String> result = new LinkedList<String>();
         synchronized(_doubleAuctionItems)
         {
             if(_doubleAuctionItems == null)
             {
                 result.add("Something has gone wrong");
-                return result;
+                return new SignedMessage<LinkedList<String>>(result, _privateKey);
             }
             if(_doubleAuctionItems.size() == 0)
             {
                 result.add("There are no items for sale");
-                return result;
+                return new SignedMessage<LinkedList<String>>(result, _privateKey);
             }
             for(String s : _doubleAuctionItems.keySet())
             {
@@ -502,7 +520,7 @@ public class Server implements IRemoteAuction{
                 }
             }
         }
-        return result;
+        return new SignedMessage<LinkedList<String>>(result, _privateKey);
 
     }
 
@@ -533,13 +551,13 @@ public class Server implements IRemoteAuction{
         else return null;
     }
 
-    public String DCreateListing(String name, String description) throws RemoteException
+    public SignedMessage<String> DCreateListing(String name, String description) throws RemoteException
     {
         String result = "";
         if(name == null || description == null)
         {
             result = "Invalid arguments";
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_doubleAuctionItems)
         {
@@ -550,16 +568,16 @@ public class Server implements IRemoteAuction{
             _doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
         }
         result = "Created new listing for " + name;
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
 
-    public String DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException
+    public SignedMessage<String> DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException
     {
         String result = "";
         if(itemName == null || sellPrice < 0 || seller == null)
         {
             result = "Error: Invalid arguments";
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_doubleAuctionItems)
         {
@@ -567,12 +585,12 @@ public class Server implements IRemoteAuction{
             if(item == null)
             {
                 result = "Error: Listing does not exist";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             if(item.isAccountOnOtherSide(seller, true))
             {
                 result = "Error: Cannot sell item you are also buying";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             item.newSale(sellPrice, seller);
             result = "Successfully placed sell order for " + itemName + " at " + AuctionItem.currencyToString(sellPrice);
@@ -582,15 +600,15 @@ public class Server implements IRemoteAuction{
                 result += "\nMatch found, sell order completed.";
             }
         }
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public String DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException
+    public SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException
     {
         String result = "";
         if(itemName == null || buyPrice < 0 || buyer == null)
         {
             result = "Error: Invalid arguments";
-            return result;
+            return new SignedMessage<String>(result, _privateKey);
         }
         synchronized(_doubleAuctionItems)
         {
@@ -598,12 +616,12 @@ public class Server implements IRemoteAuction{
             if(item == null)
             {
                 result = "Error: Listing does not exist";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             if(item.isAccountOnOtherSide(buyer, false))
             {
                 result = "Error: Cannot buy item you are also selling";
-                return result;
+                return new SignedMessage<String>(result, _privateKey);
             }
             item.newBid(buyPrice, buyer);
             result = "Successfully placed buy order for " + itemName + " at " + AuctionItem.currencyToString(buyPrice);
@@ -613,27 +631,39 @@ public class Server implements IRemoteAuction{
                 result += "\nMatch found, buy order completed.";
             }
         }
-        return result;
+        return new SignedMessage<String>(result, _privateKey);
     }
-    public String DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
+    public SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
     {
-        if(itemName == null || account == null) return "Error: invalid arguments";
-        boolean result;
+        String result;
+        if(itemName == null || account == null)
+        {
+            result = "Error: invalid arguments";
+            return new SignedMessage<String>(result, _privateKey);
+        }   
+        boolean boolResult;
         synchronized(_doubleAuctionItems)
         {
             DoubleAuctionItem item = _doubleAuctionItems.get(itemName);
-            if(item == null) return "Error: Listing does not exist";
-            result = item.removeOrders(account, removeAll);
+            if(item == null) 
+            {
+                result = "Error: Listing does not exist";
+                return new SignedMessage<String>(result, _privateKey);
+            }
+            boolResult = item.removeOrders(account, removeAll);
         }
-        if(result == false)
+        if(boolResult == false)
         {
-            return "No orders for user " + account.getName() + " were found";
+            result = "No orders for user " + account.getName() + " were found";
+            return new SignedMessage<String>(result, _privateKey);
         }
         if(removeAll)
         {
-            return "All orders removed.";
+            result = "All orders removed.";
+            return new SignedMessage<String>(result, _privateKey);
         }
-        return "Order removed.";
+        result = "Order removed.";
+        return new SignedMessage<String>(result, _privateKey);
     }
 
     public static void main(String[] args) {

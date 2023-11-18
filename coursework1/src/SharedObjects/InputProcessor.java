@@ -117,4 +117,15 @@ public class InputProcessor {
         input *= 100f;
         return (int) input;
     }
+
+    public static String ByteArrayToString(byte[] hash)
+    {
+        if(hash == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < hash.length; i++)
+        {
+            sb.append(String.format("%02X ", hash[i]));
+        }
+        return sb.toString();
+    }
 }

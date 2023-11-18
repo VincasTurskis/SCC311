@@ -1,5 +1,7 @@
+import java.security.PublicKey;
+
 public class ReverseAuctionClient {
-    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server)
+    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey)
     {
         boolean actionLoop = true;
         while(actionLoop)
@@ -28,7 +30,7 @@ public class ReverseAuctionClient {
                 case 1: // browse listings
                     try
                     {
-                        for(String s : server.RBrowseListings())
+                        for(String s : SignedMessage.validateMessage(server.RBrowseListings(), publicKey))
                         {
                             System.out.println(s);
                         }
@@ -52,7 +54,7 @@ public class ReverseAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount);
+                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no other listings for this item.");
@@ -69,10 +71,10 @@ public class ReverseAuctionClient {
                                         continue;
                                     }
                                     System.out.println("Creating a new listing...\n");
-                                    result = server.RCreateListing(itemName, description);
+                                    result = SignedMessage.validateMessage(server.RCreateListing(itemName, description), publicKey);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount);
+                                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
                                         System.out.println(result);
                                     }
                                     else
@@ -111,16 +113,16 @@ public class ReverseAuctionClient {
                         continue;
                     }
                     try {
-                        String toPrint = server.RGetSpec(itemName);
+                        String toPrint = SignedMessage.validateMessage(server.RGetSpec(itemName), publicKey);
                         System.out.println(toPrint);
-                        if(server.RExists(itemName))
+                        if(SignedMessage.validateMessage(server.RExists(itemName), publicKey))
                         {
                             System.out.println("Purchase at stated price? (Y/N)");
                             String YN = input.ReadNextLine();
                             switch (YN) {
                                 case "y":
                                 case "Y":
-                                    toPrint = server.RBuyItem(itemName, currentAccount);
+                                    toPrint = SignedMessage.validateMessage(server.RBuyItem(itemName, currentAccount), publicKey);
                                     System.out.println(toPrint);
                                     break;
                                 case "n":

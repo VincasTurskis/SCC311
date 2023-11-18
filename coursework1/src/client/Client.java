@@ -65,7 +65,7 @@ public class Client{
           InputProcessor.clearConsole();
           System.out.print("Logging in... ");
           try {
-            currentAccount = server.login(email, password);
+            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -118,7 +118,7 @@ public class Client{
           System.out.print("Creating an account... ");
           boolean result = false;
           try {
-            result = server.createAccount(accountName, email, password);
+            result = SignedMessage.validateMessage(server.createAccount(accountName, email, password), publicKey);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -140,7 +140,7 @@ public class Client{
           // Log in with the new account
           System.out.print("Logging in... ");
           try {
-            currentAccount = server.login(email, password);
+            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -189,16 +189,16 @@ public class Client{
             input.close();
             return;
           case 1:
-            MessageClient.run(currentAccount, input, server);
+            MessageClient.run(currentAccount, input, server, publicKey);
             break;
           case 2: // forward auction
-            ForwardAuctionClient.run(currentAccount, input, server);
+            ForwardAuctionClient.run(currentAccount, input, server, publicKey);
             break;
           case 3: // reverse auction
-            ReverseAuctionClient.run(currentAccount, input, server);
+            ReverseAuctionClient.run(currentAccount, input, server, publicKey);
             break;
           case 4: // double auction
-            DoubleAuctionClient.run(currentAccount, input, server);
+            DoubleAuctionClient.run(currentAccount, input, server, publicKey);
             break;
           case 5: // log out
             System.out.println("Logging out...");

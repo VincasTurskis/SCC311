@@ -1,28 +1,28 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.List;
+import java.util.LinkedList;
 
 /*
  * A remote interface for the server (level 2)
  */
 public interface IRemoteAuction extends Remote{
-    public boolean createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException;
-    public Account login(String email, String password) throws InvalidPasswordException, RemoteException;
-    public List<String> getMessages(Account account) throws RemoteException;
-    public boolean deleteMessages(Account account) throws RemoteException;
-    public List<String> FBrowseListings() throws RemoteException;
-    public String FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException;
-    public int FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException;
-    public String FCloseAuction(int auctionId, Account seller) throws RemoteException;
-    public List<String> RBrowseListings() throws RemoteException;
-    public String RCreateListing(String name, String description) throws RemoteException;
-    public String RAddEntryToListing(String name, int price, Account seller) throws RemoteException;
-    public String RBuyItem(String name, Account buyer) throws RemoteException;
-    public String RGetSpec(String name) throws RemoteException;
-    public boolean RExists(String name) throws RemoteException;
-    public List<String> DBrowseListings() throws RemoteException;
-    public String DCreateListing(String name, String description) throws RemoteException;
-    public String DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException;
-    public String DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException;
-    public String DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException;
+    public  SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException;
+    public  SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException;
+    public  SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException;
+    public  SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException;
+    public  SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException;
+    public  SignedMessage<String> FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException;
+    public  SignedMessage<Integer> FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException;
+    public  SignedMessage<String> FCloseAuction(int auctionId, Account seller) throws RemoteException;
+    public  SignedMessage<LinkedList<String>> RBrowseListings() throws RemoteException;
+    public  SignedMessage<String> RCreateListing(String name, String description) throws RemoteException;
+    public  SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException;
+    public  SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException;
+    public  SignedMessage<String> RGetSpec(String name) throws RemoteException;
+    public  SignedMessage<Boolean> RExists(String name) throws RemoteException;
+    public  SignedMessage<LinkedList<String>> DBrowseListings() throws RemoteException;
+    public  SignedMessage<String> DCreateListing(String name, String description) throws RemoteException;
+    public  SignedMessage<String> DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException;
+    public  SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException;
+    public  SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException;
 }
