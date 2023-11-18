@@ -112,4 +112,9 @@ public class InputProcessor {
     {
         System.out.print("\033\143");
     }
+    public static int currencyToInt(float input)
+    {
+        input *= 100f;
+        return (int) input;
+    }
 }

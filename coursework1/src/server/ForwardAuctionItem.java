@@ -2,11 +2,11 @@ import java.util.List;
 
 public class ForwardAuctionItem extends AuctionItem{
     protected int _itemId;
-    protected float _reservePrice;
-    protected float _currentBidPrice;
-    protected float _startingPrice;
+    protected int _reservePrice;
+    protected int _currentBidPrice;
+    protected int _startingPrice;
     protected Account _seller;
-    public ForwardAuctionItem(int id, String title, String desc, float startingPrice, float reservePrice, Account seller)
+    public ForwardAuctionItem(int id, String title, String desc, int startingPrice, int reservePrice, Account seller)
     {
         super(title, desc);
         _itemId = id;
@@ -31,15 +31,15 @@ public class ForwardAuctionItem extends AuctionItem{
     {
         return _itemId;
     }
-    public float getStartingPrice()
+    public int getStartingPrice()
     {
         return _startingPrice;
     }
-    public float getHighestBidAmount()
+    public int getHighestBidAmount()
     {
         return _currentBidPrice;
     }
-    public float getReservePrice()
+    public int getReservePrice()
     {
         return _reservePrice;
     }
@@ -68,7 +68,7 @@ public class ForwardAuctionItem extends AuctionItem{
      * @param newBuyerEmail The email of the new bidder
      * @return true if the bid was successful, false if the new price is lower than the previous highest price
      */
-    public boolean newBid(float newPrice, Account bidder)
+    public boolean newBid(int newPrice, Account bidder)
     {
         Bid newBid = new Bid(newPrice, bidder);
         if(newBid.bidPrice <= _currentBidPrice) return false;

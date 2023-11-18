@@ -6,14 +6,14 @@ import java.util.List;
 
 public class DoubleAuctionItem extends AuctionItem{
     protected List<Bid> _sales;
-    private float _lastSalePrice;
+    private int _lastSalePrice;
     public DoubleAuctionItem(String title, String desc)
     {
         super(title, desc);
         _sales = new LinkedList<Bid>();
         _lastSalePrice = -1;
     }
-    public void newBid(float price, Account bidder)
+    public void newBid(int price, Account bidder)
     {
         Bid b = new Bid(price, bidder);
         _bids.add(b);
@@ -25,7 +25,7 @@ public class DoubleAuctionItem extends AuctionItem{
         }
         return;
     }
-    public void newSale(float price, Account seller)
+    public void newSale(int price, Account seller)
     {
         Bid b = new Bid(price, seller);
         _sales.add(b);
@@ -38,7 +38,7 @@ public class DoubleAuctionItem extends AuctionItem{
         return;
     }
 
-    public float getLowestSellPrice()
+    public int getLowestSellPrice()
     {
         if(_sales.size() <= 0)
         {
@@ -54,7 +54,7 @@ public class DoubleAuctionItem extends AuctionItem{
         }
         return _sales.get(0).bidder;
     }
-    public float getHighestBuyPrice()
+    public int getHighestBuyPrice()
     {
         if(_bids.size() <= 0)
         {
@@ -70,7 +70,7 @@ public class DoubleAuctionItem extends AuctionItem{
         }
         return _bids.get(0).bidder;
     }
-    public float getLastSalePrice()
+    public int getLastSalePrice()
     {
         return _lastSalePrice;
     }
@@ -100,7 +100,7 @@ public class DoubleAuctionItem extends AuctionItem{
     {
         Bid[] result = new Bid[2];
         result[0] = null; result[1] = null;
-        float lowestSale = getLowestSellPrice(), highestBuy = getHighestBuyPrice();
+        int lowestSale = getLowestSellPrice(), highestBuy = getHighestBuyPrice();
         if(lowestSale < 0 || highestBuy < 0) return result;
         if(lowestSale > highestBuy) return result;
 

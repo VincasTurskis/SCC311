@@ -7,7 +7,7 @@ public class ReverseAuctionItem extends AuctionItem{
     {
         super(title, desc);
     }
-    public void newBid(float price, Account bidder)
+    public void newBid(int price, Account bidder)
     {
         Bid b = new Bid(price, bidder);
         _bids.add(b);
@@ -19,7 +19,7 @@ public class ReverseAuctionItem extends AuctionItem{
         }
         return;
     }
-    public float getLowestBidPrice()
+    public int getLowestBidPrice()
     {
         if(_bids.size() <= 0)
         {

@@ -67,7 +67,7 @@ public class ForwardAuctionClient {
                 try
                 {
                     //Call server function to create a new listing. Return the id if it was successful
-                    int id = server.FCreateAuction(itemName, description, startingPrice, reservePrice, currentAccount);
+                    int id = server.FCreateAuction(itemName, description, InputProcessor.currencyToInt(startingPrice), InputProcessor.currencyToInt(reservePrice), currentAccount);
                     System.out.println("Listing created. ID: " + id + "\n");
                 }
                 catch(Exception e)
@@ -111,7 +111,7 @@ public class ForwardAuctionClient {
                 {
                     // Try to place the bid based on the supplied parameters;
                     // Print the return string of the server function to console
-                    String newBidMessage = server.FPlaceBid(newId, newPrice, currentAccount);
+                    String newBidMessage = server.FPlaceBid(newId, InputProcessor.currencyToInt(newPrice), currentAccount);
                     System.out.println(newBidMessage);
                 }
                 catch(Exception e)

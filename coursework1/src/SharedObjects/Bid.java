@@ -3,9 +3,9 @@
 */
 public class Bid
 {
-    public float bidPrice;
+    public int bidPrice;
     public Account bidder;
-    public Bid(float price, Account bidderAccount)
+    public Bid(int price, Account bidderAccount)
     {
         bidder = bidderAccount;
         bidPrice = price;

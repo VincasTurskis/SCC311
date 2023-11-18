@@ -52,7 +52,7 @@ public class ReverseAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = server.RAddEntryToListing(itemName, price, currentAccount);
+                        result = server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no other listings for this item.");
@@ -72,7 +72,7 @@ public class ReverseAuctionClient {
                                     result = server.RCreateListing(itemName, description);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = server.RAddEntryToListing(itemName, price, currentAccount);
+                                        result = server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount);
                                         System.out.println(result);
                                     }
                                     else

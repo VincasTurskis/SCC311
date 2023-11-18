@@ -1,5 +1,9 @@
+import java.io.FileInputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.KeyStore;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
 /*
 * A class representing the shared buyer/seller client (level 3-5)
 */
@@ -7,7 +11,17 @@ public class Client{
   public static void main(String[] args) {
     IRemoteAuction server;
     InputProcessor input = new InputProcessor();
+    PublicKey publicKey;
     InputProcessor.clearConsole();
+    try {
+      KeyStore keyStore = KeyStore.getInstance("JKS");
+      keyStore.load(new FileInputStream("receiver_keytore.jks"), "changeit".toCharArray());
+      Certificate certificate = keyStore.getCertificate("receiverKeyPair");
+      publicKey = certificate.getPublicKey();
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
     //Acquire the correct server interface from the RMI registry
     try {
       String name = "AuctionServer";

@@ -58,7 +58,7 @@ public class DoubleAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = server.DPlaceSellOrder(itemName, price, currentAccount);
+                        result = server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no listings for this item.");
@@ -78,7 +78,7 @@ public class DoubleAuctionClient {
                                     result = server.DCreateListing(itemName, description);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = server.DPlaceSellOrder(itemName, price, currentAccount);
+                                        result = server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount);
                                         System.out.println(result);
                                     }
                                     else
@@ -120,7 +120,7 @@ public class DoubleAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = server.DPlaceBuyOrder(itemName, price, currentAccount);
+                        result = server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no listings for this item.");
@@ -140,7 +140,7 @@ public class DoubleAuctionClient {
                                     result = server.DCreateListing(itemName, description);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = server.DPlaceBuyOrder(itemName, price, currentAccount);
+                                        result = server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount);
                                         System.out.println(result);
                                     }
                                     else

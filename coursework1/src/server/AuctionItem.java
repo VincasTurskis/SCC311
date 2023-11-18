@@ -31,13 +31,14 @@ public class AuctionItem implements Serializable {
         return _itemDescription;
     }
     /*
-     * A static utility function for formatting a currency float into a string truncated down to 2 decimal points
-     * @param amount The amount as a float
+     * A static utility function for formatting a currency int into a string truncated down to 2 decimal points
+     * @param amount The amount as a int
      * @return the amount as a string
      */
-    public static String currencyToString(float amount)
+    public static String currencyToString(int amount)
     {
-        String result = String.format("%.02f", amount);
+        float amountFloat = (float)amount / 100f;
+        String result = String.format("%.02f", amountFloat);
         return result;
     }
 }

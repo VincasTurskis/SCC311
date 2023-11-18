@@ -1,8 +1,12 @@
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +35,8 @@ public class Server implements IRemoteAuction{
     private Hashtable<Account, List<String>> _messages;
     private int FNextID;
 
+    private PrivateKey _privateKey;
+
     // Constructor
     public Server() {
         super();
@@ -42,6 +48,13 @@ public class Server implements IRemoteAuction{
         _accounts = new Hashtable<String, Account>();
         _messages = new Hashtable<Account, List<String>>();
         try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(new FileInputStream("auction_keystore.jks"), "changeit".toCharArray());
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey("senderKeyPair", "changeit".toCharArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
             createAccount("Example Seller", "Example@seller.com", "examplePassword");
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,10 +62,10 @@ public class Server implements IRemoteAuction{
         Account exampleSeller = _accounts.get("Example@seller.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
-            FCreateAuction("Cup", "A nice cup.", 0, 10, exampleSeller);
-            FCreateAuction("Fork", "A decent fork.", 500.5555f, 1000f, exampleSeller);
-            FCreateAuction("Plate", "An ornate plate.", 4.99f, 100f, exampleSeller);
-            FCreateAuction("Car", "An old car.", 3, 10, exampleSeller);
+            FCreateAuction("Cup", "A nice cup.", 0, 1000, exampleSeller);
+            FCreateAuction("Fork", "A decent fork.", 50055, 1000, exampleSeller);
+            FCreateAuction("Plate", "An ornate plate.", 499, 100, exampleSeller);
+            FCreateAuction("Car", "An old car.", 300, 1000, exampleSeller);
         }
         catch (Exception e) {
             System.err.println("Exception:");
@@ -144,7 +157,7 @@ public class Server implements IRemoteAuction{
      * @param reservePrice The reserve price of the item - if the listing is closed and the highest bid is below the reserve price, the item will not be sold
      * @return the ID of the new listing. -1 If the arguments were invalid.
      */
-    public int FCreateAuction(String title, String description, float startingPrice, float reservePrice, Account seller) throws RemoteException
+    public int FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
@@ -216,7 +229,7 @@ public class Server implements IRemoteAuction{
                 }
                 else {//else, successful sale
                     String name, email;
-                    float amount;
+                    int amount;
                     name = toClose.getHighestBidder().getName();
                     email = toClose.getHighestBidder().getEmail();
                     amount = toClose.getHighestBidAmount();
@@ -279,7 +292,7 @@ public class Server implements IRemoteAuction{
      * @param email The email address of the bidder - second piece of identifying information
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public String FPlaceBid(int itemId, float newPrice, Account bidder) throws RemoteException
+    public String FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException
     {
         if(bidder == null || newPrice < 0)
         {
@@ -313,7 +326,7 @@ public class Server implements IRemoteAuction{
             else
             {
                 sendMessage(oldHighestBidder, "Forward auction: You have been outbid on " + toBid.getTitle() +". New highest bid - " +AuctionItem.currencyToString(toBid.getHighestBidAmount()));
-                result = "New bid placed on item ID: " + itemId + ". New price: " + newPrice;
+                result = "New bid placed on item ID: " + itemId + ". New price: " + AuctionItem.currencyToString(newPrice);
             }
         }
         return result;
@@ -377,7 +390,7 @@ public class Server implements IRemoteAuction{
         result = "Created new listing for " + name;
         return result;
     }
-    public String RAddEntryToListing(String name, float price, Account seller) throws RemoteException
+    public String RAddEntryToListing(String name, int price, Account seller) throws RemoteException
     {
         String result = "";
         if(name == null || price < 0 || seller == null)
@@ -401,7 +414,7 @@ public class Server implements IRemoteAuction{
     public String RBuyItem(String name, Account buyer) throws RemoteException
     {
         if(name == null || buyer == null) return "Error: Invalid arguments";
-        float purchasePrice;
+        int purchasePrice;
         synchronized(_reverseAuctionItems)
         {
             ReverseAuctionItem rai = _reverseAuctionItems.get(name);
@@ -410,7 +423,7 @@ public class Server implements IRemoteAuction{
             {
                 return "Error: You cannot buy an item you are selling";
             }
-            if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+            if(Math.abs(rai.getLowestBidPrice() + 1) == -1)
             {
                 return "No active listings for " + name + "have been found.";
             }
@@ -431,7 +444,7 @@ public class Server implements IRemoteAuction{
         synchronized(_reverseAuctionItems)
         {
             if(rai == null) return "Error: No item \"" + name + "\" found";
-            if(Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f)
+            if(Math.abs(rai.getLowestBidPrice() + 1) == -1)
             {
                 return "No active listings for " + name + "have been found.";
             }
@@ -447,7 +460,7 @@ public class Server implements IRemoteAuction{
         synchronized(_reverseAuctionItems)
         {
             ReverseAuctionItem rai = _reverseAuctionItems.get(name);
-            if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) < 0.000001f) return false;
+            if(rai == null || Math.abs(rai.getLowestBidPrice() + 1) == -1) return false;
         }
         return true;
     }
@@ -540,7 +553,7 @@ public class Server implements IRemoteAuction{
         return result;
     }
 
-    public String DPlaceSellOrder(String itemName, float sellPrice, Account seller) throws RemoteException
+    public String DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException
     {
         String result = "";
         if(itemName == null || sellPrice < 0 || seller == null)
@@ -571,7 +584,7 @@ public class Server implements IRemoteAuction{
         }
         return result;
     }
-    public String DPlaceBuyOrder(String itemName, float buyPrice, Account buyer) throws RemoteException
+    public String DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException
     {
         String result = "";
         if(itemName == null || buyPrice < 0 || buyer == null)
