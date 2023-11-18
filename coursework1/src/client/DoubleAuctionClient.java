@@ -34,7 +34,11 @@ public class DoubleAuctionClient {
                 case 1:
                     try
                     {
-                        System.out.println(server.DBrowseListings());
+                        for(String s : server.DBrowseListings())
+                        {
+                            System.out.println(s);
+                        }
+                        System.out.println("");
                     }
                     catch (Exception e) {
                         System.err.println("Exception:");

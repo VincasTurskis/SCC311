@@ -28,7 +28,11 @@ public class ReverseAuctionClient {
                 case 1: // browse listings
                     try
                     {
-                        System.out.println(server.RBrowseListings());
+                        for(String s : server.RBrowseListings())
+                        {
+                            System.out.println(s);
+                        }
+                        System.out.println("");
                     }
                     catch (Exception e) {
                         System.err.println("Exception:");
