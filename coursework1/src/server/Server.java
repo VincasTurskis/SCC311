@@ -218,7 +218,7 @@ public class Server implements IRemoteAuction{
             {
                 // If the arguments are valid, remove the listing regardless if the reserve price was met
                 _forwardAuctionItems.remove(auctionId);
-                result = "Auction for item ID:" + auctionId + " closed. ";
+                result = "Auction for " + toClose.getTitle() + " (ID:" + auctionId + ") closed. ";
                 // Bloc containing different outcome possibilities
                 if(!toClose.hasABid()) // No bidders
                 {
@@ -235,7 +235,7 @@ public class Server implements IRemoteAuction{
                     email = toClose.getHighestBidder().getEmail();
                     amount = toClose.getHighestBidAmount();
                     // Return the details of the winner, and the closing price
-                    result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
+                    result += "The winner is " + name + " (Email: " + email + ") with an amount of " + AuctionItem.currencyToString(amount);
                     sendMessage(toClose.getSellerAccount(), "Forward Auction: " + result);
                     sendMessage(toClose.getHighestBidder(), "Forward Auction: You have won the auction for " + toClose.getTitle() + " (ID: " + toClose.getId() + ") with a bid of " + AuctionItem.currencyToString(amount));
                 }
@@ -427,8 +427,8 @@ public class Server implements IRemoteAuction{
                 return "No active listings for " + name + "have been found.";
             }
             purchasePrice = rai.getLowestBidPrice();
-            rai.buyLowest();
             sendMessage(rai.getLowestBidder(), "Reverse Auction: Your listing for " + name + " has been sold for " + AuctionItem.currencyToString(purchasePrice));
+            rai.buyLowest();
             sendMessage(buyer, "Reverse Auction: You have purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice));
         }
         String result = "Purchased " + name + " for " + AuctionItem.currencyToString(purchasePrice);
