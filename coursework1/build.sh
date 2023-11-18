@@ -1,4 +1,5 @@
 #!/bin/bash
+rm */**/**.class
 mkdir -p bin
 cp -r ./src/* ./bin
 cd bin

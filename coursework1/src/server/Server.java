@@ -137,20 +137,6 @@ public class Server implements IRemoteAuction{
         return true;
     }
     /*
-     * Gets the specifics of an auction listing (Level 1)
-     * @param itemId The ID of the listing
-     * @param clientId the ID of the client requesting it
-     * @return The listed item, null if no item for the provided ID is found
-     */
-    public ForwardAuctionItem getSpec (int itemId, int clientId) throws RemoteException
-    {
-        synchronized(_forwardAuctionItems)
-        {
-            return _forwardAuctionItems.get(itemId);
-        }
-    }
-
-    /*
      * Creates a new auction listing with the provided parameters. Used by the seller client (level 2)
      * @param title The title of the listing
      * @param description A (short) description of the listed item
