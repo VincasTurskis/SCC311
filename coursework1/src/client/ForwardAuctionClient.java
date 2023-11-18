@@ -25,10 +25,14 @@ public class ForwardAuctionClient {
             case 0: // Back
                 InputProcessor.clearConsole();
                 return;
-            case 1: //Switch case for different operations
+            case 1: // browse listings
                 try
                 {
-                    System.out.println(server.FBrowseListings());
+                    for(String s : server.FBrowseListings())
+                    {
+                        System.out.println(s);
+                    }
+                    System.out.println("");
                 }
                 catch (Exception e) {
                     System.err.println("Exception:");
