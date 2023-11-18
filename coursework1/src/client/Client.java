@@ -15,7 +15,7 @@ public class Client{
     InputProcessor.clearConsole();
     try {
       KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(new FileInputStream("receiver_keytore.jks"), "changeit".toCharArray());
+      keyStore.load(new FileInputStream("receiver_keystore.jks"), "auctionPassword".toCharArray());
       Certificate certificate = keyStore.getCertificate("receiverKeyPair");
       publicKey = certificate.getPublicKey();
     } catch (Exception e) {
