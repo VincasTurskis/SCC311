@@ -47,15 +47,15 @@ public class ForwardAuctionItem extends AuctionItem{
     {
         return _bids;
     }
-    public String getHighestBidName()
+    public Account getHighestBidder()
     {
-        if(_bids == null || _bids.size() == 0) return "No bid";
-        return _bids.get(_bids.size() - 1).bidder.getName();
+        if(_bids == null || _bids.size() == 0) return null;
+        return _bids.get(_bids.size() - 1).bidder;
     }
-    public String getHighestBidEmail()
+    public boolean hasABid()
     {
-        if(_bids == null || _bids.size() == 0) return "No bid";
-        return _bids.get(_bids.size() - 1).bidder.getEmail();
+        if(_bids == null || _bids.size() == 0) return false;
+        return true;
     }
     public Account getSellerAccount()
     {

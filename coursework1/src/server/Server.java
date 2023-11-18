@@ -220,7 +220,7 @@ public class Server implements IRemoteAuction{
                 _forwardAuctionItems.remove(auctionId);
                 result = "Auction for item ID:" + auctionId + " closed. ";
                 // Bloc containing different outcome possibilities
-                if(toClose.getHighestBidName() == "No bid") // No bidders
+                if(!toClose.hasABid()) // No bidders
                 {
                     result += "There were no bidders for this item";
                 }
@@ -231,8 +231,8 @@ public class Server implements IRemoteAuction{
                 else {//else, successful sale
                     String name, email;
                     float amount;
-                    name = toClose.getHighestBidName();
-                    email = toClose.getHighestBidEmail();
+                    name = toClose.getHighestBidder().getName();
+                    email = toClose.getHighestBidder().getEmail();
                     amount = toClose.getHighestBidAmount();
                     // Return the details of the winner, and the closing price
                     result += "The winner is " + name + " (" + email + ") with an amount of " + AuctionItem.currencyToString(amount);
