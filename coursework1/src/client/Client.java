@@ -12,7 +12,17 @@ public class Client{
     IRemoteAuction server;
     InputProcessor input = new InputProcessor();
     PublicKey publicKey;
+    boolean printHash = false;
     InputProcessor.clearConsole();
+    if(args.length == 1 && args[0].equals("verbose"))
+    {
+      System.out.println("Starting Client in verbose mode");
+      printHash = true;
+    }
+    else
+    {
+      System.out.println("To print message hash values, run Java Client verbose");
+    }
     try {
       KeyStore keyStore = KeyStore.getInstance("JKS");
       keyStore.load(new FileInputStream("receiver_keystore.jks"), "auctionPassword".toCharArray());
@@ -65,7 +75,7 @@ public class Client{
           InputProcessor.clearConsole();
           System.out.print("Logging in... ");
           try {
-            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey);
+            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey, printHash);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -118,7 +128,7 @@ public class Client{
           System.out.print("Creating an account... ");
           boolean result = false;
           try {
-            result = SignedMessage.validateMessage(server.createAccount(accountName, email, password), publicKey);
+            result = SignedMessage.validateMessage(server.createAccount(accountName, email, password), publicKey, printHash);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -140,7 +150,7 @@ public class Client{
           // Log in with the new account
           System.out.print("Logging in... ");
           try {
-            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey);
+            currentAccount = SignedMessage.validateMessage(server.login(email, password), publicKey, printHash);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;
@@ -189,16 +199,16 @@ public class Client{
             input.close();
             return;
           case 1:
-            MessageClient.run(currentAccount, input, server, publicKey);
+            MessageClient.run(currentAccount, input, server, publicKey, printHash);
             break;
           case 2: // forward auction
-            ForwardAuctionClient.run(currentAccount, input, server, publicKey);
+            ForwardAuctionClient.run(currentAccount, input, server, publicKey, printHash);
             break;
           case 3: // reverse auction
-            ReverseAuctionClient.run(currentAccount, input, server, publicKey);
+            ReverseAuctionClient.run(currentAccount, input, server, publicKey, printHash);
             break;
           case 4: // double auction
-            DoubleAuctionClient.run(currentAccount, input, server, publicKey);
+            DoubleAuctionClient.run(currentAccount, input, server, publicKey, printHash);
             break;
           case 5: // log out
             System.out.println("Logging out...");

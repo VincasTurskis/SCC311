@@ -2,12 +2,12 @@ import java.security.PublicKey;
 import java.util.List;
 
 public class MessageClient {
-    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey)
+    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey, boolean printHash)
     {
         while(true)
         {
             try {
-                List<String> messages = SignedMessage.validateMessage(server.getMessages(currentAccount), publicKey);
+                List<String> messages = SignedMessage.validateMessage(server.getMessages(currentAccount), publicKey, printHash);
                 if(messages == null)
                 {
                     System.out.println("Something has gone wrong. Please log out and try again.");
@@ -51,7 +51,7 @@ public class MessageClient {
                         switch (YN) {
                             case "y":
                             case "Y":
-                                boolean result = SignedMessage.validateMessage(server.deleteMessages(currentAccount), publicKey);
+                                boolean result = SignedMessage.validateMessage(server.deleteMessages(currentAccount), publicKey, printHash);
                                 if(!result)
                                 {
                                     System.out.println("Could not delete messages. Please log out and try again.");

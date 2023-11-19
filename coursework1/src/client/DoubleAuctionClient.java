@@ -6,7 +6,7 @@
 import java.security.PublicKey;
 
 public class DoubleAuctionClient {
-    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey)
+    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey, boolean printHash)
     {
         boolean actionLoop = true;
         while(actionLoop)
@@ -37,7 +37,7 @@ public class DoubleAuctionClient {
                 case 1:
                     try
                     {
-                        for(String s : SignedMessage.validateMessage(server.DBrowseListings(), publicKey))
+                        for(String s : SignedMessage.validateMessage(server.DBrowseListings(), publicKey, printHash))
                         {
                             System.out.println(s);
                         }
@@ -61,7 +61,7 @@ public class DoubleAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = SignedMessage.validateMessage(server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                        result = SignedMessage.validateMessage(server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no listings for this item.");
@@ -78,10 +78,10 @@ public class DoubleAuctionClient {
                                         continue;
                                     }
                                     System.out.println("Creating a new listing...\n");
-                                    result = SignedMessage.validateMessage(server.DCreateListing(itemName, description), publicKey);
+                                    result = SignedMessage.validateMessage(server.DCreateListing(itemName, description), publicKey, printHash);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = SignedMessage.validateMessage(server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                                        result = SignedMessage.validateMessage(server.DPlaceSellOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                                         System.out.println(result);
                                     }
                                     else
@@ -123,7 +123,7 @@ public class DoubleAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = SignedMessage.validateMessage(server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                        result = SignedMessage.validateMessage(server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no listings for this item.");
@@ -140,10 +140,10 @@ public class DoubleAuctionClient {
                                         continue;
                                     }
                                     System.out.println("Creating a new listing...\n");
-                                    result = SignedMessage.validateMessage(server.DCreateListing(itemName, description), publicKey);
+                                    result = SignedMessage.validateMessage(server.DCreateListing(itemName, description), publicKey, printHash);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = SignedMessage.validateMessage(server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                                        result = SignedMessage.validateMessage(server.DPlaceBuyOrder(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                                         System.out.println(result);
                                     }
                                     else
@@ -211,7 +211,7 @@ public class DoubleAuctionClient {
                         case "y":
                         case "Y":
                             try {
-                                System.out.println(SignedMessage.validateMessage(server.DRemoveOrder(itemName, currentAccount, all), publicKey));
+                                System.out.println(SignedMessage.validateMessage(server.DRemoveOrder(itemName, currentAccount, all), publicKey, printHash));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

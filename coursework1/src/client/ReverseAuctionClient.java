@@ -1,7 +1,7 @@
 import java.security.PublicKey;
 
 public class ReverseAuctionClient {
-    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey)
+    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey, boolean printHash)
     {
         boolean actionLoop = true;
         while(actionLoop)
@@ -30,7 +30,7 @@ public class ReverseAuctionClient {
                 case 1: // browse listings
                     try
                     {
-                        for(String s : SignedMessage.validateMessage(server.RBrowseListings(), publicKey))
+                        for(String s : SignedMessage.validateMessage(server.RBrowseListings(), publicKey, printHash))
                         {
                             System.out.println(s);
                         }
@@ -54,7 +54,7 @@ public class ReverseAuctionClient {
                     price = input.ReadNextFloat();
                     try
                     {
-                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                         if(result.equals("Error: Listing does not exist"))
                         {
                             System.out.println("There are no other listings for this item.");
@@ -71,10 +71,10 @@ public class ReverseAuctionClient {
                                         continue;
                                     }
                                     System.out.println("Creating a new listing...\n");
-                                    result = SignedMessage.validateMessage(server.RCreateListing(itemName, description), publicKey);
+                                    result = SignedMessage.validateMessage(server.RCreateListing(itemName, description), publicKey, printHash);
                                     if(result.equals("Created new listing for " + itemName))
                                     {
-                                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey);
+                                        result = SignedMessage.validateMessage(server.RAddEntryToListing(itemName, InputProcessor.currencyToInt(price), currentAccount), publicKey, printHash);
                                         System.out.println(result);
                                     }
                                     else
@@ -113,16 +113,16 @@ public class ReverseAuctionClient {
                         continue;
                     }
                     try {
-                        String toPrint = SignedMessage.validateMessage(server.RGetSpec(itemName), publicKey);
+                        String toPrint = SignedMessage.validateMessage(server.RGetSpec(itemName), publicKey, printHash);
                         System.out.println(toPrint);
-                        if(SignedMessage.validateMessage(server.RExists(itemName), publicKey))
+                        if(SignedMessage.validateMessage(server.RExists(itemName), publicKey, printHash))
                         {
                             System.out.println("Purchase at stated price? (Y/N)");
                             String YN = input.ReadNextLine();
                             switch (YN) {
                                 case "y":
                                 case "Y":
-                                    toPrint = SignedMessage.validateMessage(server.RBuyItem(itemName, currentAccount), publicKey);
+                                    toPrint = SignedMessage.validateMessage(server.RBuyItem(itemName, currentAccount), publicKey, printHash);
                                     System.out.println(toPrint);
                                     break;
                                 case "n":

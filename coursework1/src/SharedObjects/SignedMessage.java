@@ -77,20 +77,28 @@ public class SignedMessage<T extends Serializable> implements Serializable {
         }  
     }
 
-    public static <T extends Serializable> T validateMessage(SignedMessage<T> message, PublicKey publicKey)
+    public static <T extends Serializable> T validateMessage(SignedMessage<T> message, PublicKey publicKey, boolean printHash)
     {
         if(message == null || publicKey == null) return null;
         byte[] receivedHash;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             receivedHash = digest.digest(objectToByteArray(message.getMessage()));
-            System.out.println("    Message hash:\n" + InputProcessor.ByteArrayToString(message.getHash()));
-            System.out.println("    Received hash:\n" +  InputProcessor.ByteArrayToString(receivedHash));
+            if(printHash)
+            {
+                System.out.println("    Message hash:\n" + InputProcessor.ByteArrayToString(message.getHash()));
+                System.out.println("    Received hash:\n" +  InputProcessor.ByteArrayToString(receivedHash));
+            }
             if(!message.verify(publicKey))
             {
                 System.out.println("!!!");
                 System.out.println("    HASHES DO NOT MATCH!");
                 System.out.println("!!!");
+                /*if(!printHash)
+                {
+                    System.out.println("    Message hash:\n" + InputProcessor.ByteArrayToString(message.getHash()));
+                    System.out.println("    Received hash:\n" +  InputProcessor.ByteArrayToString(receivedHash));   
+                }*/
             }
             return message.getMessage();
         } catch (Exception e) {

@@ -1,7 +1,7 @@
 import java.security.PublicKey;
 
 public class ForwardAuctionClient {
-    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey)
+    public static void run(Account currentAccount, InputProcessor input, IRemoteAuction server, PublicKey publicKey, boolean printHash)
     {
         boolean actionLoop = true;
         while(actionLoop)
@@ -30,7 +30,7 @@ public class ForwardAuctionClient {
             case 1: // browse listings
                 try
                 {
-                    for(String s : SignedMessage.validateMessage(server.FBrowseListings(), publicKey))
+                    for(String s : SignedMessage.validateMessage(server.FBrowseListings(), publicKey, printHash))
                     {
                         System.out.println(s);
                     }
@@ -69,7 +69,7 @@ public class ForwardAuctionClient {
                 try
                 {
                     //Call server function to create a new listing. Return the id if it was successful
-                    int id = SignedMessage.validateMessage(server.FCreateAuction(itemName, description, InputProcessor.currencyToInt(startingPrice), InputProcessor.currencyToInt(reservePrice), currentAccount), publicKey);
+                    int id = SignedMessage.validateMessage(server.FCreateAuction(itemName, description, InputProcessor.currencyToInt(startingPrice), InputProcessor.currencyToInt(reservePrice), currentAccount), publicKey, printHash);
                     System.out.println("Listing created. ID: " + id + "\n");
                 }
                 catch(Exception e)
@@ -89,7 +89,7 @@ public class ForwardAuctionClient {
                 try
                 {
                     // Call server function to close auction and print the returned status string
-                    toPrint = SignedMessage.validateMessage(server.FCloseAuction(id, currentAccount), publicKey);
+                    toPrint = SignedMessage.validateMessage(server.FCloseAuction(id, currentAccount), publicKey, printHash);
                     System.out.println(toPrint);
                 }
                 catch(Exception e)
@@ -113,7 +113,7 @@ public class ForwardAuctionClient {
                 {
                     // Try to place the bid based on the supplied parameters;
                     // Print the return string of the server function to console
-                    String newBidMessage = SignedMessage.validateMessage(server.FPlaceBid(newId, InputProcessor.currencyToInt(newPrice), currentAccount), publicKey);
+                    String newBidMessage = SignedMessage.validateMessage(server.FPlaceBid(newId, InputProcessor.currencyToInt(newPrice), currentAccount), publicKey, printHash);
                     System.out.println(newBidMessage);
                 }
                 catch(Exception e)
