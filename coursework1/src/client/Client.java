@@ -14,7 +14,8 @@ public class Client{
     PublicKey publicKey;
     boolean printHash = false;
     InputProcessor.clearConsole();
-    if(args.length == 1 && args[0].equals("verbose"))
+    String serverName;
+    if(args.length >= 1 && args[0].equals("verbose"))
     {
       System.out.println("Starting Client in verbose mode");
       printHash = true;
@@ -32,11 +33,19 @@ public class Client{
       e.printStackTrace();
       return;
     }
+    if(args.length >= 2 && args[1].equals("fake"))
+    {
+      serverName = "FakeAuctionServer";
+      System.out.println("Connecting to a definitely not fake server...");
+    }
+    else
+    {
+      serverName = "AuctionServer";
+    }
     //Acquire the correct server interface from the RMI registry
     try {
-      String name = "AuctionServer";
       Registry registry = LocateRegistry.getRegistry("localhost");
-      server = (IRemoteAuction) registry.lookup(name);
+      server = (IRemoteAuction) registry.lookup(serverName);
     }
     catch (Exception e) {
       System.err.println("Exception:");
