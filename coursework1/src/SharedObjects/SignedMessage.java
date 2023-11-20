@@ -126,8 +126,6 @@ public class SignedMessage<T extends Serializable> implements Serializable {
             e.printStackTrace();
             return null;
         }
-        //MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        //receivedHash = digest.digest(objectToByteArray(message.getMessage()));
         if(printHash && !badPaddingException)
         {
             System.out.println("    Message hash:\n" + InputProcessor.ByteArrayToString(message.getHash()));

@@ -66,15 +66,16 @@ public class FakeServer implements IRemoteAuction{
             InputProcessor.clearConsole();
             System.out.println("Starting fake server...");
             FakeServer s;
+            boolean resign = false;
             // Setup the server
-            if(args.length >= 1 && args[0].equals("resign"))
+            for(String arg : args)
             {
-                s = new FakeServer(true);
+                if(arg.equals("-resign"))
+                {
+                    resign = true;
+                }
             }
-            else
-            {
-                s = new FakeServer(false);
-            }
+            s = new FakeServer(resign);
             // Setup the different interfaces
             String name = "FakeAuctionServer";
             // Get the RMI registry

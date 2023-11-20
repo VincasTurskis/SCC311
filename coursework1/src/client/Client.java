@@ -14,15 +14,19 @@ public class Client{
     PublicKey publicKey;
     boolean printHash = false;
     InputProcessor.clearConsole();
-    String serverName;
-    if(args.length >= 1 && args[0].equals("verbose"))
+    String serverName = "AuctionServer";
+    for(String arg: args)
     {
-      System.out.println("Starting Client in verbose mode");
-      printHash = true;
-    }
-    else
-    {
-      System.out.println("To print message hash values, run Java Client verbose");
+      if(arg.equals("-verbose"))
+      {
+        System.out.println("Starting Client in verbose mode");
+        printHash = true;
+      }
+      if(arg.equals("-fake"))
+      {
+        serverName = "FakeAuctionServer";
+        System.out.println("Connecting to a definitely not fake server...");
+      }
     }
     try {
       KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -32,15 +36,6 @@ public class Client{
     } catch (Exception e) {
       e.printStackTrace();
       return;
-    }
-    if(args.length >= 2 && args[1].equals("fake"))
-    {
-      serverName = "FakeAuctionServer";
-      System.out.println("Connecting to a definitely not fake server...");
-    }
-    else
-    {
-      serverName = "AuctionServer";
     }
     //Acquire the correct server interface from the RMI registry
     try {
