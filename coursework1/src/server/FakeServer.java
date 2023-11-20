@@ -46,12 +46,12 @@ public class FakeServer implements IRemoteAuction{
         SignedMessage<T> message = new SignedMessage<T>(newMessage, original.getSignature());
         if(resign)
         {
-            message = resignMessage(message);
+            message = proxyMessage(message);
         }
         return message;   
     }
 
-    public <T extends Serializable> SignedMessage<T> resignMessage(SignedMessage<T> original)
+    public <T extends Serializable> SignedMessage<T> proxyMessage(SignedMessage<T> original)
     {
         if(resign)
         {
@@ -97,27 +97,27 @@ public class FakeServer implements IRemoteAuction{
 
     @Override
     public SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException {
-        return resignMessage(server.createAccount(name, email, password));
+        return proxyMessage(server.createAccount(name, email, password));
     }
 
     @Override
     public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException {
-        return resignMessage(server.login(email, password));
+        return proxyMessage(server.login(email, password));
     }
 
     @Override
     public SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException {
-        return resignMessage(server.getMessages(account));
+        return proxyMessage(server.getMessages(account));
     }
 
     @Override
     public SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException {
-        return resignMessage(server.deleteMessages(account));
+        return proxyMessage(server.deleteMessages(account));
     }
 
     @Override
     public SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException {
-        return resignMessage(server.FBrowseListings());
+        return proxyMessage(server.FBrowseListings());
     }
 
     @Override
@@ -127,69 +127,69 @@ public class FakeServer implements IRemoteAuction{
 
     @Override
     public SignedMessage<Integer> FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException {
-        return resignMessage(server.FCreateAuction(title, description, startingPrice, reservePrice, seller));
+        return proxyMessage(server.FCreateAuction(title, description, startingPrice, reservePrice, seller));
     }
 
     @Override
     public SignedMessage<String> FCloseAuction(int auctionId, Account seller) throws RemoteException {
-        return resignMessage(server.FCloseAuction(auctionId, seller));
+        return proxyMessage(server.FCloseAuction(auctionId, seller));
     }
 
     @Override
     public SignedMessage<LinkedList<String>> RBrowseListings() throws RemoteException {
-        return resignMessage(server.RBrowseListings());
+        return proxyMessage(server.RBrowseListings());
     }
 
     @Override
     public SignedMessage<String> RCreateListing(String name, String description) throws RemoteException {
-        return resignMessage(server.RCreateListing(name, description));
+        return proxyMessage(server.RCreateListing(name, description));
     }
 
     @Override
     public SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException {
-        return resignMessage(server.RAddEntryToListing(name, price, seller));
+        return proxyMessage(server.RAddEntryToListing(name, price, seller));
     }
 
     @Override
     public SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException {
-        return resignMessage(server.RBuyItem(name, buyer));
+        return proxyMessage(server.RBuyItem(name, buyer));
     }
 
     @Override
     public SignedMessage<String> RGetSpec(String name) throws RemoteException {
-        return resignMessage(server.RGetSpec(name));
+        return proxyMessage(server.RGetSpec(name));
     }
 
     @Override
     public SignedMessage<Boolean> RExists(String name) throws RemoteException {
-        return resignMessage(server.RExists(name));
+        return proxyMessage(server.RExists(name));
     }
 
     @Override
     public SignedMessage<LinkedList<String>> DBrowseListings() throws RemoteException {
-        return resignMessage(server.DBrowseListings());
+        return proxyMessage(server.DBrowseListings());
     }
 
     @Override
     public SignedMessage<String> DCreateListing(String name, String description) throws RemoteException {
-        return resignMessage(server.DCreateListing(name, description));
+        return proxyMessage(server.DCreateListing(name, description));
     }
 
     @Override
     public SignedMessage<String> DPlaceSellOrder(String itemName, int sellPrice, Account seller)
             throws RemoteException {
-        return resignMessage(server.DPlaceSellOrder(itemName, sellPrice, seller));
+        return proxyMessage(server.DPlaceSellOrder(itemName, sellPrice, seller));
     }
 
     @Override
     public SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException {
-        return resignMessage(server.DPlaceBuyOrder(itemName, buyPrice, buyer));
+        return proxyMessage(server.DPlaceBuyOrder(itemName, buyPrice, buyer));
     }
 
     @Override
     public SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll)
             throws RemoteException {
-        return resignMessage(server.DRemoveOrder(itemName, account, removeAll));
+        return proxyMessage(server.DRemoveOrder(itemName, account, removeAll));
     }
 
 }
