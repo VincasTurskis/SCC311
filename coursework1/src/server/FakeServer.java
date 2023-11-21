@@ -84,7 +84,7 @@ public class FakeServer implements IRemoteAuction{
             // Advertise the different interfaces (basic, seller, client) on the registry
             registry.rebind(name, (IRemoteAuction) stub);
             System.out.println("Fake server ready");
-            if(args.length >= 1 && args[0].equals("resign"))
+            if(resign)
             {
                 System.out.println("This server will re-sign all messages with its own private key");
             }

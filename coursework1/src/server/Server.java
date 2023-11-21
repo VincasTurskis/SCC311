@@ -53,17 +53,18 @@ public class Server implements IRemoteAuction{
             e.printStackTrace();
         }
         try {
-            createAccount("Example Seller", "Example@seller.com", "examplePassword");
+            createAccount("Example", "a@b.com", "password");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Account exampleSeller = _accounts.get("Example@seller.com");
+        Account exampleSeller = _accounts.get("a@b.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
-            FCreateAuction("Cup", "A nice cup.", 0, 1000, exampleSeller);
-            FCreateAuction("Fork", "A decent fork.", 50055, 1000, exampleSeller);
-            FCreateAuction("Plate", "An ornate plate.", 499, 100, exampleSeller);
-            FCreateAuction("Car", "An old car.", 300, 1000, exampleSeller);
+            FCreateAuction("Cup", "A nice cup.", 1000, 1000, exampleSeller);
+            RCreateListing("Plate", "An antique plate");
+            RAddEntryToListing("Plate", 1000, exampleSeller);
+            DCreateListing("Fork", "A fancy fork");
+            DPlaceSellOrder("Fork", 1000, exampleSeller);
         }
         catch (Exception e) {
             System.err.println("Exception:");
@@ -145,6 +146,7 @@ public class Server implements IRemoteAuction{
             if(_messages.get(tAccount) == null) return new SignedMessage<Boolean>(false, _privateKey);
             _messages.put(tAccount, new LinkedList<String>());
         }
+        System.out.println("Deleted messages of " + tAccount.getName());
         return new SignedMessage<Boolean>(true, _privateKey);
     }
     /*
@@ -297,10 +299,11 @@ public class Server implements IRemoteAuction{
             return new SignedMessage<String>("Error: invalid arguments", _privateKey);
         }
         String result;
+        ForwardAuctionItem toBid;
         synchronized(_forwardAuctionItems)
         {
             // Get the item to be bid on from the hash table
-            ForwardAuctionItem toBid = _forwardAuctionItems.get(itemId);
+            toBid = _forwardAuctionItems.get(itemId);
             // If no item was found, output that
             if(toBid == null)
             {
@@ -327,6 +330,7 @@ public class Server implements IRemoteAuction{
                 result = "New bid placed on item ID: " + itemId + ". New price: " + AuctionItem.currencyToString(newPrice);
             }
         }
+        System.out.println(bidder.getName() + " has placed a new bid on " + toBid.getTitle() + " with a price of " + AuctionItem.currencyToString(newPrice));
         return new SignedMessage<String>(result, _privateKey);
     }
 
@@ -386,6 +390,7 @@ public class Server implements IRemoteAuction{
             _reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
         }
         result = "Created new listing for " + name;
+        System.out.println(result);
         return new SignedMessage<String>(result, _privateKey);
     }
     public SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException
@@ -407,6 +412,7 @@ public class Server implements IRemoteAuction{
             item.newBid(price, seller);
         }
         result = "Successfully added new offer for " + name + " at " + AuctionItem.currencyToString(price);
+        System.out.println(seller.getName() + " added new offer for " + name + " at " + AuctionItem.currencyToString(price));
         return new SignedMessage<String>(result, _privateKey);
     }
     public SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException
@@ -542,6 +548,7 @@ public class Server implements IRemoteAuction{
             sendMessage(match[1].bidder,
             "Double Auction: Your buy order for " + item.getTitle() + " at " + AuctionItem.currencyToString(match[1].bidPrice) + " has been completed."
             );
+            System.out.println("Total profit: " + AuctionItem.currencyToString(Math.abs(match[0].bidPrice - match[1].bidPrice)));
             if(isNewOrderSeller)
             {
                 return match[0].bidder;
@@ -568,6 +575,7 @@ public class Server implements IRemoteAuction{
             _doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
         }
         result = "Created new listing for " + name;
+        System.out.println(result);
         return new SignedMessage<String>(result, _privateKey);
     }
 
@@ -600,6 +608,7 @@ public class Server implements IRemoteAuction{
                 result += "\nMatch found, sell order completed.";
             }
         }
+        System.out.println(seller.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
     }
     public SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException
@@ -631,6 +640,7 @@ public class Server implements IRemoteAuction{
                 result += "\nMatch found, buy order completed.";
             }
         }
+        System.out.println(buyer.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
     }
     public SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
@@ -655,14 +665,17 @@ public class Server implements IRemoteAuction{
         if(boolResult == false)
         {
             result = "No orders for user " + account.getName() + " were found";
+            System.out.println(account.getName() + ": " + result);
             return new SignedMessage<String>(result, _privateKey);
         }
         if(removeAll)
         {
             result = "All orders removed.";
+            System.out.println(account.getName() + ": " + result);
             return new SignedMessage<String>(result, _privateKey);
         }
         result = "Order removed.";
+        System.out.println(account.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
     }
 
