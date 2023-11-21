@@ -108,6 +108,10 @@ public class InputProcessor {
     {
         s.close();
     }
+
+    /*
+     * Clears the console
+     */
     public static void clearConsole()
     {
         System.out.print("\033\143");
