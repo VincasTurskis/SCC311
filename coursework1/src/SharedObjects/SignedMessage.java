@@ -11,19 +11,15 @@ import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 
-import org.jgroups.JChannel;
-
 public class SignedMessage<T extends Serializable> implements Serializable {
 
     private T _message;
     private byte[] _signature;
     private byte[] _hash;
-    private JChannel channel;
     public SignedMessage(T message, PrivateKey privateKey)
     {
         _message = message;
         try {
-            channel = new JChannel();
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             _hash = digest.digest(objectToByteArray(_message));
             Signature signature = Signature.getInstance("SHA256withRSA");
