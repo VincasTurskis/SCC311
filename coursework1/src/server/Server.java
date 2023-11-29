@@ -10,6 +10,10 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jgroups.Channel;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+
 /*
  * A class for all server-side functions of the auction system (level 2)
  */
@@ -36,10 +40,19 @@ public class Server implements IRemoteAuction{
 
     private PrivateKey _privateKey;
 
+    private JChannel _channel;
+
     // Constructor
     public Server() {
         super();
-        FNextID = 1;
+
+        try {
+            _channel = new JChannel();
+            _channel.connect("AuctionCluster");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
         _forwardAuctionItems = new Hashtable<Integer, ForwardAuctionItem>();
         _reverseAuctionItems = new Hashtable<String, ReverseAuctionItem>();
         _doubleAuctionItems = new Hashtable<String, DoubleAuctionItem>();
