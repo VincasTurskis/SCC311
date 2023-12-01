@@ -78,6 +78,19 @@ public class SignedMessage<T extends Serializable> implements Serializable {
         return _message.toString();
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if(o == this) return true;
+        if(!(o instanceof SignedMessage<?>)) return false;
+        SignedMessage<?> sm = (SignedMessage<?>) o;
+        if(sm._message.equals(_message) && sm._signature.equals(_signature) && sm._hash.equals(_hash))
+        {
+            return true;
+        }
+        else return false;
+    }
+
     public static <O extends Serializable> byte[] objectToByteArray(O o)
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

@@ -13,11 +13,16 @@ import java.util.List;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.blocks.Request;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
+import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.util.RspList;
 
 /*
  * A class for all server-side functions of the auction system (level 2)
  */
-public class Server implements IRemoteAuction{
+public class FrontendServer implements IRemoteAuction{
     // Hash table for all currently listed items for the forward auction
     // The key is the same as the ID field of AuctionItem
     private Hashtable<Integer, ForwardAuctionItem> _forwardAuctionItems;
@@ -41,14 +46,16 @@ public class Server implements IRemoteAuction{
     private PrivateKey _privateKey;
 
     private JChannel _channel;
+    private RpcDispatcher _dispacher;
 
     // Constructor
-    public Server() {
+    public FrontendServer() {
         super();
 
         try {
             _channel = new JChannel();
             _channel.connect("AuctionCluster");
+            _dispacher = new RpcDispatcher(_channel, this);
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -88,6 +95,18 @@ public class Server implements IRemoteAuction{
 
     public SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException
     {
+        RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2, false);
+        RspList<SignedMessage<Boolean>> answers;
+        try {
+            answers = _dispacher.callRemoteMethods(null, "createAccount", new Object[]{name, email, password}, new Class[]{name.getClass(), email.getClass(), password.getClass()}, ro);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        
+
+
+
         if(name == null || email == null || password == null) return new SignedMessage<Boolean>(false, _privateKey);
         Account a = new Account(name, email, password);
         synchronized(_accounts)
@@ -697,7 +716,7 @@ public class Server implements IRemoteAuction{
             InputProcessor.clearConsole();
             System.out.println("Starting server...");
             // Setup the server
-            Server s = new Server();
+            BackendServer s = new BackendServer();
             // Setup the different interfaces
             String name = "AuctionServer";
             // Get the RMI registry
