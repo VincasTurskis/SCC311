@@ -1,22 +1,14 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+
 import java.io.FileInputStream;
-import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.util.LinkedList;
 import java.util.List;
 import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.MessageListener;
-import org.jgroups.ReceiverAdapter;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.util.Util;
-
-import java.io.InputStream;
 
 /*
  * A class for all server-side functions of the auction system (level 2)
