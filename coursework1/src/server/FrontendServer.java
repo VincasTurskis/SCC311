@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
@@ -712,6 +713,17 @@ public class FrontendServer implements IRemoteAuction{
         result = "Order removed.";
         System.out.println(account.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
+    }
+
+    public ServerState getState() throws Exception
+    {
+        if(_channel.getView().getMembers().size() == 1)
+        {
+            throw new Exception("No backend servers active");
+        }
+        Address nextBackend = _channel.getView().getMembers().get(1);
+        RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2000, false);
+        return _dispacher.callRemoteMethod(nextBackend, "getState", new Object[]{}, new Class[]{}, ro);
     }
 
     public static void main(String[] args) {

@@ -1,11 +1,22 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.util.LinkedList;
 import java.util.List;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.MessageListener;
+import org.jgroups.ReceiverAdapter;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.util.Util;
+
+import java.io.InputStream;
 
 /*
  * A class for all server-side functions of the auction system (level 2)
@@ -35,22 +46,25 @@ public class BackendServer{
             _channel = new JChannel();
             _channel.connect("AuctionCluster");
             _dispatcher = new RpcDispatcher(_channel, this);
+            RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2000, false);
+            _state = _dispatcher.callRemoteMethod(_channel.getView().getMembers().get(0), "getState", new Object[]{}, new Class[]{}, ro);
+            Account a = new Account("Example", "a@b.com", "password");
+            addAccount(a);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
-        System.out.println(_channel.getViewAsString());
     }
 
     public SignedMessage<Boolean> addAccount(Account a) throws InvalidPasswordException, RemoteException
     {
-        System.out.println("Method invoked");
         if(a == null) return new SignedMessage<Boolean>(false, _privateKey);
         synchronized(_state.accounts)
         {
             Account existing = _state.accounts.get(a.getEmail());
             if(existing != null)
             {
+                System.out.println("Server: Account for " + a.getEmail() + " already exists.");
                 return new SignedMessage<Boolean>(false, _privateKey);
             }
             _state.accounts.put(a.getEmail(), a);
@@ -649,6 +663,14 @@ public class BackendServer{
         return new SignedMessage<String>(result, _privateKey);
     }
 
+    public ServerState getState() throws Exception
+    {
+        System.out.println("Getting state");
+        synchronized(_state)
+        {
+            return _state;
+        }
+    }
     public static void main(String[] args) {
         try {
             InputProcessor.clearConsole();

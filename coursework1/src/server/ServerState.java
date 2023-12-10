@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
-public class ServerState {
+public class ServerState implements Serializable{
     // Hash table for all currently listed items for the forward auction
     // The key is the same as the ID field of AuctionItem
     public Hashtable<Integer, ForwardAuctionItem> forwardAuctionItems;
