@@ -132,7 +132,7 @@ public class Client{
           System.out.print("Creating an account... ");
           boolean result = false;
           try {
-            result = SignedMessage.validateMessage(server.createAccount(accountName, email, password), publicKey, printHash);
+            result = SignedMessage.validateMessage(server.addAccount(new Account(accountName, email, password)), publicKey, printHash);
           } catch ( InvalidPasswordException e) {
             System.out.println("Error: the password is not valid. Try again.");
             continue;

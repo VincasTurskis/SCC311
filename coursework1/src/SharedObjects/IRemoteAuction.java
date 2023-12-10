@@ -6,8 +6,8 @@ import java.util.LinkedList;
  * A remote interface for the server (level 2)
  */
 public interface IRemoteAuction extends Remote{
-    public  SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException;
-    public  SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException;
+    public  SignedMessage<Boolean> addAccount(Account account) throws InvalidPasswordException, RemoteException, NoConsensusException;
+    public  SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException, NoConsensusException;
     public  SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException;
     public  SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException;
     public  SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException;

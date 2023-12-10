@@ -82,9 +82,12 @@ public class SignedMessage<T extends Serializable> implements Serializable {
     public boolean equals(Object o)
     {
         if(o == this) return true;
-        if(!(o instanceof SignedMessage<?>)) return false;
+        if(!(o instanceof SignedMessage))
+        {
+            return false;
+        }
         SignedMessage<?> sm = (SignedMessage<?>) o;
-        if(sm._message.equals(_message) && sm._signature.equals(_signature) && sm._hash.equals(_hash))
+        if(sm._message.equals(_message) && Arrays.equals(sm._signature, _signature) && Arrays.equals(sm._hash, _hash))
         {
             return true;
         }

@@ -9,7 +9,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.util.LinkedList;
 
-public class FakeServer implements IRemoteAuction{
+public class FakeFrontendServer implements IRemoteAuction{
 
     private PrivateKey _fakeKey;
 
@@ -17,7 +17,7 @@ public class FakeServer implements IRemoteAuction{
 
     private boolean resign;
 
-    public FakeServer(boolean Resign)
+    public FakeFrontendServer(boolean Resign)
     {
         resign = Resign;
         try {
@@ -65,7 +65,7 @@ public class FakeServer implements IRemoteAuction{
         try {
             InputProcessor.clearConsole();
             System.out.println("Starting fake server...");
-            FakeServer s;
+            FakeFrontendServer s;
             boolean resign = false;
             // Setup the server
             for(String arg : args)
@@ -75,7 +75,7 @@ public class FakeServer implements IRemoteAuction{
                     resign = true;
                 }
             }
-            s = new FakeServer(resign);
+            s = new FakeFrontendServer(resign);
             // Setup the different interfaces
             String name = "FakeAuctionServer";
             // Get the RMI registry
@@ -96,12 +96,12 @@ public class FakeServer implements IRemoteAuction{
     }
 
     @Override
-    public SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException {
-        return proxyMessage(server.createAccount(name, email, password));
+    public SignedMessage<Boolean> addAccount(Account a) throws InvalidPasswordException, RemoteException, NoConsensusException {
+        return proxyMessage(server.addAccount(a));
     }
 
     @Override
-    public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException {
+    public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException, NoConsensusException {
         return proxyMessage(server.login(email, password));
     }
 

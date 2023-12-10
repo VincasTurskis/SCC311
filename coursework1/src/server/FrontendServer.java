@@ -10,10 +10,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jgroups.Channel;
 import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.blocks.Request;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
@@ -55,6 +52,7 @@ public class FrontendServer implements IRemoteAuction{
         try {
             _channel = new JChannel();
             _channel.connect("AuctionCluster");
+            _channel.setDiscardOwnMessages(true);
             _dispacher = new RpcDispatcher(_channel, this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,6 +63,7 @@ public class FrontendServer implements IRemoteAuction{
         _doubleAuctionItems = new Hashtable<String, DoubleAuctionItem>();
         _accounts = new Hashtable<String, Account>();
         _messages = new Hashtable<Account, LinkedList<String>>();
+        System.out.println(_channel.getViewAsString());
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(new FileInputStream("sender_keystore.jks"), "auctionPassword".toCharArray());
@@ -73,18 +72,19 @@ public class FrontendServer implements IRemoteAuction{
             e.printStackTrace();
         }
         try {
-            createAccount("Example", "a@b.com", "password");
+            
+            addAccount(new Account("Example", "a@b.com", "password"));
+            Account exampleSeller = login("a@b.com", "password").getMessage();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Account exampleSeller = _accounts.get("a@b.com");
         try{
             // Create a few test items to test buyer client without having to use seller client input
-            FCreateAuction("Cup", "A nice cup.", 1000, 1000, exampleSeller);
-            RCreateListing("Plate", "An antique plate");
-            RAddEntryToListing("Plate", 1000, exampleSeller);
-            DCreateListing("Fork", "A fancy fork");
-            DPlaceSellOrder("Fork", 1000, exampleSeller);
+            //FCreateAuction("Cup", "A nice cup.", 1000, 1000, exampleSeller);
+            //RCreateListing("Plate", "An antique plate");
+            //RAddEntryToListing("Plate", 1000, exampleSeller);
+            //DCreateListing("Fork", "A fancy fork");
+            //DPlaceSellOrder("Fork", 1000, exampleSeller);
         }
         catch (Exception e) {
             System.err.println("Exception:");
@@ -93,44 +93,47 @@ public class FrontendServer implements IRemoteAuction{
 
     }
 
-    public SignedMessage<Boolean> createAccount(String name, String email, String password) throws InvalidPasswordException, RemoteException
+    public SignedMessage<Boolean> addAccount(Account a) throws InvalidPasswordException, RemoteException, NoConsensusException
     {
-        RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2, false);
+        RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2000, false);
         RspList<SignedMessage<Boolean>> answers;
         try {
-            answers = _dispacher.callRemoteMethods(null, "createAccount", new Object[]{name, email, password}, new Class[]{name.getClass(), email.getClass(), password.getClass()}, ro);
+            answers = _dispacher.callRemoteMethods(null, "addAccount", new Object[]{a}, new Class[]{a.getClass()}, ro);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        
-
-
-
-        if(name == null || email == null || password == null) return new SignedMessage<Boolean>(false, _privateKey);
-        Account a = new Account(name, email, password);
-        synchronized(_accounts)
+        try {
+            SignedMessage<Boolean> message = InputProcessor.GetConsensusMessage(answers);
+            return message;
+        } catch (NoConsensusException e) {
+            throw e;
+        } catch (Exception e)
         {
-            Account existing = _accounts.get(email);
-            if(existing != null)
-            {
-                return new SignedMessage<Boolean>(false, _privateKey);
-            }
-            _accounts.put(email, a);
-            _messages.put(a, new LinkedList<String>());
+            e.printStackTrace();
+            return null;
         }
-        System.out.println("Server: Created account for " + email);
-        return new SignedMessage<Boolean>(true, _privateKey);
     }
 
-    public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException
+    public SignedMessage<Account> login(String email, String password) throws InvalidPasswordException, RemoteException, NoConsensusException
     {
-        synchronized(_accounts)
+        RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2000, false);
+        RspList<SignedMessage<Account>> answers;
+        try {
+            answers = _dispacher.callRemoteMethods(null, "login", new Object[]{email, password}, new Class[]{email.getClass(), password.getClass()}, ro);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        try {
+            SignedMessage<Account> message = InputProcessor.GetConsensusMessage(answers);
+            return message;
+        } catch (NoConsensusException e) {
+            throw e;
+        } catch (Exception e)
         {
-            Account a = _accounts.get(email);
-            if(a == null) return null;
-            if(!a.validatePassword(password)) return null;
-            return new SignedMessage<Account>(a, _privateKey);
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -714,9 +717,9 @@ public class FrontendServer implements IRemoteAuction{
     public static void main(String[] args) {
         try {
             InputProcessor.clearConsole();
-            System.out.println("Starting server...");
+            System.out.println("Starting frontend server...");
             // Setup the server
-            BackendServer s = new BackendServer();
+            FrontendServer s = new FrontendServer();
             // Setup the different interfaces
             String name = "AuctionServer";
             // Get the RMI registry
