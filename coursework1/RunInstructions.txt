@@ -1,4 +1,0 @@
-java -cp "../../lib/jgroups-3.6.20.Final.jar;." BackendServer
-java -cp "../../lib/jgroups-3.6.20.Final.jar;." FrontendServer
-java -cp "../../lib/jgroups-3.6.20.Final.jar;." Client
-java -cp "../../lib/jgroups-3.6.20.Final.jar;." FakeFrontendServer
