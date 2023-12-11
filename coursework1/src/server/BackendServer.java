@@ -40,8 +40,6 @@ public class BackendServer{
             _dispatcher = new RpcDispatcher(_channel, this);
             RequestOptions ro = new RequestOptions(ResponseMode.GET_ALL, 2000, false);
             _state = _dispatcher.callRemoteMethod(_channel.getView().getMembers().get(0), "getState", new Object[]{}, new Class[]{}, ro);
-            Account a = new Account("Example", "a@b.com", "password");
-            addAccount(a);
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -133,7 +131,7 @@ public class BackendServer{
      * @param reservePrice The reserve price of the item - if the listing is closed and the highest bid is below the reserve price, the item will not be sold
      * @return the ID of the new listing. -1 If the arguments were invalid.
      */
-    public SignedMessage<Integer> FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException
+    public SignedMessage<Integer> FCreateAuction(String title, String description, Integer startingPrice, Integer reservePrice, Account seller) throws RemoteException
     {
         System.out.print("Server: attempting to create auction listing for " + title + "...");
         // Check if arguments are valid
@@ -159,7 +157,7 @@ public class BackendServer{
      * @param requestSource the account that's making the request to close.
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public SignedMessage<String> FCloseAuction(int auctionId, Account requestSource) throws RemoteException
+    public SignedMessage<String> FCloseAuction(Integer auctionId, Account requestSource) throws RemoteException
     {
         System.out.print("Server: attempting to close auction for ID: " + auctionId + "...");
         String result;
@@ -268,7 +266,7 @@ public class BackendServer{
      * @param email The email address of the bidder - second piece of identifying information
      * @return A string (intended for output to console) of the results of the operation. 
      */
-    public SignedMessage<String> FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException
+    public SignedMessage<String> FPlaceBid(Integer itemId, Integer newPrice, Account bidder) throws RemoteException
     {
         if(bidder == null || newPrice < 0)
         {
@@ -363,13 +361,16 @@ public class BackendServer{
             {
                 result = "Listing already exists";
             }
-            _state.reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
+            else
+            {
+                _state.reverseAuctionItems.put(name, new ReverseAuctionItem(name, description));
+                result = "Created new listing for " + name;
+            }
         }
-        result = "Created new listing for " + name;
         System.out.println(result);
         return new SignedMessage<String>(result, _privateKey);
     }
-    public SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException
+    public SignedMessage<String> RAddEntryToListing(String name, Integer price, Account seller) throws RemoteException
     {
         String result = "";
         if(name == null || price < 0 || seller == null)
@@ -548,14 +549,17 @@ public class BackendServer{
             {
                 result = "Listing already exists";
             }
-            _state.doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
+            else
+            {
+                _state.doubleAuctionItems.put(name, new DoubleAuctionItem(name, description));
+                result = "Created new listing for " + name;
+            }
         }
-        result = "Created new listing for " + name;
         System.out.println(result);
         return new SignedMessage<String>(result, _privateKey);
     }
 
-    public SignedMessage<String> DPlaceSellOrder(String itemName, int sellPrice, Account seller) throws RemoteException
+    public SignedMessage<String> DPlaceSellOrder(String itemName, Integer sellPrice, Account seller) throws RemoteException
     {
         String result = "";
         if(itemName == null || sellPrice < 0 || seller == null)
@@ -587,7 +591,7 @@ public class BackendServer{
         System.out.println(seller.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
     }
-    public SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException
+    public SignedMessage<String> DPlaceBuyOrder(String itemName, Integer buyPrice, Account buyer) throws RemoteException
     {
         String result = "";
         if(itemName == null || buyPrice < 0 || buyer == null)
@@ -619,7 +623,7 @@ public class BackendServer{
         System.out.println(buyer.getName() + ": " + result);
         return new SignedMessage<String>(result, _privateKey);
     }
-    public SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll) throws RemoteException
+    public SignedMessage<String> DRemoveOrder(String itemName, Account account, Boolean removeAll) throws RemoteException
     {
         String result;
         if(itemName == null || account == null)
@@ -657,7 +661,7 @@ public class BackendServer{
 
     public ServerState getState() throws Exception
     {
-        System.out.println("Getting state");
+        System.out.println("Responded to a state transfer request");
         synchronized(_state)
         {
             return _state;

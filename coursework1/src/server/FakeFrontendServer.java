@@ -15,9 +15,9 @@ public class FakeFrontendServer implements IRemoteAuction{
 
     private IRemoteAuction server;
 
-    private boolean resign;
+    private Boolean resign;
 
-    public FakeFrontendServer(boolean Resign)
+    public FakeFrontendServer(Boolean Resign)
     {
         resign = Resign;
         try {
@@ -106,89 +106,89 @@ public class FakeFrontendServer implements IRemoteAuction{
     }
 
     @Override
-    public SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException {
+    public SignedMessage<LinkedList<String>> getMessages(Account account) throws RemoteException, NoConsensusException {
         return proxyMessage(server.getMessages(account));
     }
 
     @Override
-    public SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException {
+    public SignedMessage<Boolean> deleteMessages(Account account) throws RemoteException, NoConsensusException {
         return proxyMessage(server.deleteMessages(account));
     }
 
     @Override
-    public SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException {
+    public SignedMessage<LinkedList<String>> FBrowseListings() throws RemoteException, NoConsensusException{
         return proxyMessage(server.FBrowseListings());
     }
 
     @Override
-    public SignedMessage<String> FPlaceBid(int itemId, int newPrice, Account bidder) throws RemoteException {
+    public SignedMessage<String> FPlaceBid(Integer itemId, Integer newPrice, Account bidder) throws RemoteException, NoConsensusException{
         return tamper(server.FPlaceBid(itemId, newPrice, bidder), "Bid was totally placed. 100%. This is not a fake message");
     }
 
     @Override
-    public SignedMessage<Integer> FCreateAuction(String title, String description, int startingPrice, int reservePrice, Account seller) throws RemoteException {
+    public SignedMessage<Integer> FCreateAuction(String title, String description, Integer startingPrice, Integer reservePrice, Account seller) throws RemoteException, NoConsensusException {
         return proxyMessage(server.FCreateAuction(title, description, startingPrice, reservePrice, seller));
     }
 
     @Override
-    public SignedMessage<String> FCloseAuction(int auctionId, Account seller) throws RemoteException {
+    public SignedMessage<String> FCloseAuction(Integer auctionId, Account seller) throws RemoteException, NoConsensusException {
         return proxyMessage(server.FCloseAuction(auctionId, seller));
     }
 
     @Override
-    public SignedMessage<LinkedList<String>> RBrowseListings() throws RemoteException {
+    public SignedMessage<LinkedList<String>> RBrowseListings() throws RemoteException, NoConsensusException {
         return proxyMessage(server.RBrowseListings());
     }
 
     @Override
-    public SignedMessage<String> RCreateListing(String name, String description) throws RemoteException {
+    public SignedMessage<String> RCreateListing(String name, String description) throws RemoteException, NoConsensusException {
         return proxyMessage(server.RCreateListing(name, description));
     }
 
     @Override
-    public SignedMessage<String> RAddEntryToListing(String name, int price, Account seller) throws RemoteException {
+    public SignedMessage<String> RAddEntryToListing(String name, Integer price, Account seller) throws RemoteException, NoConsensusException {
         return proxyMessage(server.RAddEntryToListing(name, price, seller));
     }
 
     @Override
-    public SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException {
+    public SignedMessage<String> RBuyItem(String name, Account buyer) throws RemoteException, NoConsensusException {
         return proxyMessage(server.RBuyItem(name, buyer));
     }
 
     @Override
-    public SignedMessage<String> RGetSpec(String name) throws RemoteException {
+    public SignedMessage<String> RGetSpec(String name) throws RemoteException, NoConsensusException {
         return proxyMessage(server.RGetSpec(name));
     }
 
     @Override
-    public SignedMessage<Boolean> RExists(String name) throws RemoteException {
+    public SignedMessage<Boolean> RExists(String name) throws RemoteException, NoConsensusException {
         return proxyMessage(server.RExists(name));
     }
 
     @Override
-    public SignedMessage<LinkedList<String>> DBrowseListings() throws RemoteException {
+    public SignedMessage<LinkedList<String>> DBrowseListings() throws RemoteException, NoConsensusException {
         return proxyMessage(server.DBrowseListings());
     }
 
     @Override
-    public SignedMessage<String> DCreateListing(String name, String description) throws RemoteException {
+    public SignedMessage<String> DCreateListing(String name, String description) throws RemoteException, NoConsensusException {
         return proxyMessage(server.DCreateListing(name, description));
     }
 
     @Override
-    public SignedMessage<String> DPlaceSellOrder(String itemName, int sellPrice, Account seller)
-            throws RemoteException {
+    public SignedMessage<String> DPlaceSellOrder(String itemName, Integer sellPrice, Account seller)
+            throws RemoteException, NoConsensusException {
         return proxyMessage(server.DPlaceSellOrder(itemName, sellPrice, seller));
     }
 
     @Override
-    public SignedMessage<String> DPlaceBuyOrder(String itemName, int buyPrice, Account buyer) throws RemoteException {
+    public SignedMessage<String> DPlaceBuyOrder(String itemName, Integer buyPrice, Account buyer) throws RemoteException, NoConsensusException {
         return proxyMessage(server.DPlaceBuyOrder(itemName, buyPrice, buyer));
     }
 
     @Override
-    public SignedMessage<String> DRemoveOrder(String itemName, Account account, boolean removeAll)
-            throws RemoteException {
+    public SignedMessage<String> DRemoveOrder(String itemName, Account account, Boolean removeAll)
+            throws RemoteException, NoConsensusException {
         return proxyMessage(server.DRemoveOrder(itemName, account, removeAll));
     }
 

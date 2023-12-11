@@ -1,7 +1,10 @@
 /*
 * A helper class to represent a single bid on this item
 */
-public class Bid
+
+import java.io.Serializable;
+
+public class Bid implements Serializable
 {
     public int bidPrice;
     public Account bidder;
