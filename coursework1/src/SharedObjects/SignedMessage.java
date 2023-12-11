@@ -7,9 +7,14 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Arrays;
+import java.util.Map.Entry;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+
+import org.jgroups.Address;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 
 public class SignedMessage<T extends Serializable> implements Serializable {
 
@@ -158,7 +163,58 @@ public class SignedMessage<T extends Serializable> implements Serializable {
                 System.out.println("    Received hash:\n" +  InputProcessor.ByteArrayToString(receivedHash));   
             }
         }
-        return message.getMessage();
-        
+        return message.getMessage();       
+    }
+    public static <T extends Serializable> SignedMessage<T> GetConsensusMessage(RspList<SignedMessage<T>> messages) throws Exception
+    {
+        if (messages == null) return null;
+        if (messages.isEmpty() == true)
+        {
+            return null;
+        }
+        boolean hasException = false;
+        Rsp<SignedMessage<T>> prevMessage = null;
+        for(Entry<Address, Rsp<SignedMessage<T>>> messageEntry : messages.entrySet())
+        {
+            
+            Rsp<SignedMessage<T>> message = messageEntry.getValue();
+            if(message.hasException() == true)
+            {
+                hasException = true;
+            }
+            if(prevMessage != null)
+            {                
+                if(message.hasException() != prevMessage.hasException())
+                {
+                    throw new NoConsensusException();
+                }
+                if(hasException)
+                {
+                    if(!prevMessage.getException().equals(message.getException()))
+                    {
+                        throw new NoConsensusException();
+                    }
+                }
+                else
+                {
+                    if(!prevMessage.getValue().equals(message.getValue()))
+                    {
+                        System.out.println(prevMessage.getValue());
+                        System.out.println(message.getValue());
+                        throw new NoConsensusException();
+                    }
+                }
+            }
+            prevMessage = message;
+        }
+        if(hasException)
+        {
+            Exception e = new Exception(prevMessage.getException());
+            throw e;
+        }
+        else
+        {
+            return prevMessage.getValue();
+        }
     }
 }

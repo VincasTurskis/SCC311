@@ -67,7 +67,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<Boolean> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<Boolean> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -89,7 +89,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<Account> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<Account> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -111,7 +111,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<LinkedList<String>> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<LinkedList<String>> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -133,7 +133,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<Boolean> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<Boolean> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -155,7 +155,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<Integer> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<Integer> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -177,7 +177,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -199,7 +199,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<LinkedList<String>> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<LinkedList<String>> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -221,7 +221,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -243,7 +243,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<LinkedList<String>> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<LinkedList<String>> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -264,7 +264,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -284,7 +284,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -305,7 +305,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -326,7 +326,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -347,7 +347,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<Boolean> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<Boolean> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -369,7 +369,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<LinkedList<String>> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<LinkedList<String>> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -391,7 +391,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -413,7 +413,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -434,7 +434,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
@@ -455,7 +455,7 @@ public class FrontendServer implements IRemoteAuction{
             return null;
         }
         try {
-            SignedMessage<String> message = InputProcessor.GetConsensusMessage(answers);
+            SignedMessage<String> message = SignedMessage.GetConsensusMessage(answers);
             return message;
         } catch (NoConsensusException e) {
             throw e;
