@@ -1,10 +1,5 @@
-import java.io.Serializable;
-import java.util.Scanner;
-import java.util.Map.Entry;
 
-import org.jgroups.Address;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
+import java.util.Scanner;
 /*
  * A utility class for reading and validating user input from the console
  */
