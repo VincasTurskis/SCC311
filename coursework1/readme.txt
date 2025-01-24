@@ -5,7 +5,7 @@ Ensure rmiregistry is running in bin/server
 in bin/server: java -cp "../../lib/jgroups-3.6.20.Final.jar;." BackendServer
 
 in bin/server: java -cp "../../lib/jgroups-3.6.20.Final.jar;." FrontendServer
-    The frotend server will attempt to create some initial/test auctions on startup. Ensure at least 1 backend server is running
+    The frontend server will attempt to create some initial/test auctions on startup. Ensure at least 1 backend server is running
 
 in bin/client: java -cp "../../lib/jgroups-3.6.20.Final.jar;." Client
     possible arguments:
